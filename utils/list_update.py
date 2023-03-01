@@ -2,7 +2,7 @@
 
 from datetime import datetime
 import json, re
-import requests1
+import requests
 
 
 class update():
