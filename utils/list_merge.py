@@ -139,7 +139,7 @@ class SubMerge:
                     f.close()
                 repo_amount_dic.setdefault(id, amount)
                 line = f'- [{remarks}]({repo_site}), 节点数量: `{amount}`\n'
-            if remarks != "alanbobs999/TopFreeProxies":
+            if remarks != "rzhy1/12":
                 thanks.append(line)
 
         # 所有节点打印
