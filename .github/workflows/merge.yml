@@ -12,6 +12,9 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write 
     steps:
     - name: 迁出代码
       uses: actions/checkout@v2
