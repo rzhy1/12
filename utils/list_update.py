@@ -5,7 +5,7 @@ import json, re
 import requests
 
 
-class update():
+class UpdateUrl():
     def __init__(self,config={'list_file': './sub/sub_list.json'}):
         self.list_file = config['list_file']
         with open(self.list_file, 'r', encoding='utf-8') as f: # 载入订阅链接
@@ -113,4 +113,4 @@ class update():
                 return current_url
 
 if __name__ == '__main__':
-    update()
+    UpdateUrl()
