@@ -114,16 +114,17 @@ class SubMerge:
 
         # 所有节点打印
         for index in range(len(lines)):
-            if lines[index] == '## 所有节点\n':  # 目标行内容
+            if lines[index] == '### 所有节点\n': # 目标行内容
                 # 清除旧内容
-                lines.pop(index + 1)  # 删除节点数量
+                lines.pop(index+1) # 删除节点数量
 
-                with open('./sub/sub_merge_yaml.yaml', 'r', encoding='utf-8') as f:
-                    proxies = f.read()
-                    proxies = proxies.split('\n- ')
+                with open(f'{self.merge_dir}sub_merge_base64.txt', 'r', encoding='utf-8') as f:
+                    proxies_base64 = f.read()
+                    proxies = base64_decode(proxies_base64)
+                    proxies = proxies.split('\n')
                     top_amount = len(proxies) - 1
-
-                lines.insert(index + 1, f'合并节点总数: `{top_amount}`\n')
+                    f.close()
+                lines.insert(index+1, f'合并节点总数: `{top_amount}`\n')
                 break
         
         # 写入 README 内容
