@@ -19,7 +19,7 @@ sh run.sh
 已删除
 
 ## 所有节点
-合并节点总数: `1624`
+合并节点总数: `1576`
 
 ## 节点来源
 - [pojiezhiyuanjun/freev2](https://github.com/pojiezhiyuanjun/freev2), 节点数量: `73`
