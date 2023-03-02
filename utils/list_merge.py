@@ -30,45 +30,38 @@ class SubMerge:
     def __init__(self):
         self.sc = SubConvert()
 
-    def sub_merge(self, url_list):  # 将转换后的所有 Url 链接内容合并转换 YAML or Base64, ，并输出文件，输入订阅列表。
-
+    def sub_merge(self, url_list):
         content_list = []
         os_call('rm -f ./sub/list/*')
 
-        for index in range(len(url_list)):
-            content = self.sc.convert_remote(url_list[index]['url'], output_type='url', host='http://127.0.0.1:25500')
-            ids = url_list[index]['id']
-            remarks = url_list[index]['remarks']
-            if content == 'Url 解析错误':
+        for index, url_info in enumerate(url_list):
+            url, ids, remarks = url_info['url'], url_info['id'], url_info['remarks']
+            content = self.sc.convert_remote(url, output_type='url', host='http://127.0.0.1:25500')
+            if content.startswith('Url 解析错误'):
                 content = self.sc.main(self.read_list(sub_list_json)[index]['url'], input_type='url', output_type='url')
-                if content != 'Url 解析错误':
-                    content_list.append(content)
-                    print(f'Writing content of {remarks} to {ids:0>2d}.txt\n')
+                if content.startswith('Url 解析错误'):
+                    error_msg = 'Url 解析错误'
+                    print(f'Writing error of {remarks} to {ids:0>2d}.txt')
                 else:
-                    print(f'Writing error of {remarks} to {ids:0>2d}.txt\n')
-                file = open(f'{sub_list_path}{ids:0>2d}.txt', 'w+', encoding='utf-8')
-                file.write('Url 解析错误')
-                file.close()
-            elif content == 'Url 订阅内容无法解析':
-                file = open(f'{sub_list_path}{ids:0>2d}.txt', 'w+', encoding='utf-8')
-                file.write('Url 订阅内容无法解析')
-                file.close()
-                print(f'Writing error of {remarks} to {ids:0>2d}.txt\n')
-            elif content != None:
+                    content_list.append(content)
+                    print(f'Writing content of {remarks} to {ids:0>2d}.txt')
+            elif content.startswith('Url 订阅内容无法解析'):
+                error_msg = 'Url 订阅内容无法解析'
+                print(f'Writing error of {remarks} to {ids:0>2d}.txt')
+            elif content is not None:
                 content_list.append(content)
-                file = open(f'{sub_list_path}{ids:0>2d}.txt', 'w+', encoding='utf-8')
-                file.write(content)
-                file.close()
-                print(f'Writing content of {remarks} to {ids:0>2d}.txt\n')
+                print(f'Writing content of {remarks} to {ids:0>2d}.txt')
             else:
-                file = open(f'{sub_list_path}{ids:0>2d}.txt', 'w+', encoding='utf-8')
-                file.write('Url 订阅内容无法解析')
-                file.close()
-                print(f'Writing error of {remarks} to {ids:0>2d}.txt\n')
+                error_msg = 'Url 订阅内容无法解析'
+                print(f'Writing error of {remarks} to {ids:0>2d}.txt')
+
+            with open(f'{sub_list_path}{ids:0>2d}.txt', 'w+', encoding='utf-8') as f:
+                f.write(error_msg if 'error_msg' in locals() else content)
+
 
         print('Merging nodes...\n')
         content_raw = ''.join(
-            content_list)  # https://python3-cookbook.readthedocs.io/zh_CN/latest/c02/p14_combine_and_concatenate_strings.html
+            content_list)
         content_yaml = self.sc.main(content_raw, 'content', 'YAML',
                                     {'dup_rm_enabled': True, 'format_name_enabled': True})
         content_write(yaml_p, content_yaml)
