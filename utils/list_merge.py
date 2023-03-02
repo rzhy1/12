@@ -60,7 +60,7 @@ class SubMerge:
 
 
         print('Merging nodes...\n')
-        # content_raw = ''.join(content_list)
+        content_raw = ''.join(content_list)
         # content_yaml = self.sc.main(content_raw, 'content', 'YAML',
         #                             {'dup_rm_enabled': True, 'format_name_enabled': True})
         # content_write(yaml_p, content_yaml)
