@@ -74,12 +74,15 @@ class SubMerge:
 
 
         print('Merging nodes...\n')
-        content_raw = ''.join(set(content_list))  # 去重操作
+        content_raw = ''.join(content_list)
+        content_set = set(content_list)  # 对内容进行去重操作
         content_base64 = self.sc.base64_encode(content_raw)
+        content_set_base64 = set(self.sc.base64_encode(content) for content in content_set)  # 对去重后的内容进行编码和去重
         write_list = [f'{sub_merge_path}/sub_merge_base64.txt']
-        content_type = content_base64
+        content_type = content_set_base64
         for index in range(len(write_list)):
-            content_write(write_list[index], content_type)
+            content_write(write_list[index], content_type[index])
+        print(f'Done! Output merged nodes to {merge_path}.')
 
         # # delete CN nodes
         # with open(yaml_p, 'rb') as f:
