@@ -9,7 +9,7 @@ import yaml
 from list_update import UpdateUrl
 from sub_convert import SubConvert
 from cv2box.utils import os_call
-from pathos.multiprocessing import ProcessPool as Pool
+from multiprocessing import Pool
 from functools import partial
 
 # 文件路径定义
@@ -80,13 +80,13 @@ class SubMerge:
         # content_yaml = self.sc.main(content_raw, 'content', 'YAML', {'dup_rm_enabled': True, 'format_name_enabled': True})
         # content_write(yaml_p, content_yaml)
         # print(f'Done!')
-        def merge_nodes(content_list, yaml_p):
-            content_raw = ''.join(content_list)
-            content_yaml = self.sc.main(content_raw, 'content', 'YAML', {'dup_rm_enabled': True, 'format_name_enabled': True})
-            content_write(yaml_p, content_yaml)
+    def merge_nodes(content_list, yaml_p):
+        content_raw = ''.join(content_list)
+        content_yaml = self.sc.main(content_raw, 'content', 'YAML', {'dup_rm_enabled': True, 'format_name_enabled': True})
+        content_write(yaml_p, content_yaml)
 
         print('Merging nodes...\n')
-        with pool = Pool(4) pool:
+        with Pool(processes=4) as pool:
             func = partial(merge_nodes, yaml_p=yaml_p)
             pool.map(func, sub_list_remote)
         print('Done! Output merged nodes to {}.'.format(merge_path))    
@@ -108,14 +108,17 @@ class SubMerge:
 
         # 所有节点打印
         for index in range(len(lines)):
-            if lines[index] == '## 所有节点\n':  # 目标行内容
+            if lines[index] == '### 所有节点\n': # 目标行内容
                 # 清除旧内容
-                lines.pop(index + 1)  # 删除节点数量
-                with open('./sub/sub_merge_yaml.yaml', 'r', encoding='utf-8') as f:
-                    proxies = f.read()
-                    proxies = proxies.split('\n- ')
+                lines.pop(index+1) # 删除节点数量
+
+                with open(f'{self.merge_dir}sub_merge_base64.txt', 'r', encoding='utf-8') as f:
+                    proxies_base64 = f.read()
+                    proxies = base64_decode(proxies_base64)
+                    proxies = proxies.split('\n')
                     top_amount = len(proxies) - 1
-                lines.insert(index + 1, f'合并节点总数: `{top_amount}`\n')
+                    f.close()
+                lines.insert(index+1, f'合并节点总数: `{top_amount}`\n')
                 break
         
         # 写入 README 内容
