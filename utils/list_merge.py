@@ -9,7 +9,7 @@ import yaml
 from list_update import UpdateUrl
 from sub_convert import SubConvert
 from cv2box.utils import os_call
-from multiprocessing import Pool
+from pathos.multiprocessing import ProcessPool as Pool
 from functools import partial
 
 # 文件路径定义
@@ -86,7 +86,7 @@ class SubMerge:
             content_write(yaml_p, content_yaml)
 
         print('Merging nodes...\n')
-        with Pool(processes=4) as pool:
+        with pool = Pool(4) pool:
             func = partial(merge_nodes, yaml_p=yaml_p)
             pool.map(func, sub_list_remote)
         print('Done! Output merged nodes to {}.'.format(merge_path))    
