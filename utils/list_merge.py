@@ -26,7 +26,11 @@ def content_write(file, output_type):
     file = open(file, 'w+', encoding='utf-8')
     file.write(output_type)
     file.close()
-
+    
+def merge_nodes(content_list, yaml_p):
+    content_raw = ''.join(content_list)
+    content_yaml = self.sc.main(content_raw, 'content', 'YAML', {'dup_rm_enabled': True, 'format_name_enabled': True})
+    content_write(yaml_p, content_yaml)
 
 class SubMerge:
     def __init__(self):
@@ -45,11 +49,6 @@ class SubMerge:
                 raw_list[index]['url'] = urls
                 input_list.append(raw_list[index])
         return input_list
-        
-    def merge_nodes(content_list, yaml_p):
-        content_raw = ''.join(content_list)
-        content_yaml = self.sc.main(content_raw, 'content', 'YAML', {'dup_rm_enabled': True, 'format_name_enabled': True})
-        content_write(yaml_p, content_yaml)
         
     def sub_merge(self, url_list):
         content_list = []
