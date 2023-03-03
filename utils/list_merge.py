@@ -75,26 +75,17 @@ class SubMerge:
 
         print('Merging nodes...\n')
         content_raw = ''.join(content_list)
-        content_set = set(content_list)  # 对内容进行去重操作
-        content_base64 = self.sc.base64_encode(content_raw)
-        content_set_base64 = set(self.sc.base64_encode(content) for content in content_set)  # 对去重后的内容进行编码和去重
-        write_list = [f'{sub_merge_path}/sub_merge_base64.txt']
-        content_type = list(content_base64)
-        for index in range(len(write_list)):
-            content_write(write_list[index], content_type[index])
-        print('Done!\n')
+        # content_yaml = self.sc.main(content_raw, 'content', 'YAML',
+        #                             {'dup_rm_enabled': True, 'format_name_enabled': True})
+        # content_write(yaml_p, content_yaml)
 
-        # # delete CN nodes
-        # with open(yaml_p, 'rb') as f:
-        #     old_data = yaml.load(f)
-        # new_data = {'proxies': []}
-        # for i in range(len(old_data['proxies'])):
-        #     if 'CN' not in old_data['proxies'][i]['name']:
-        #         new_data['proxies'].append(old_data['proxies'][i])
-        # # print(len(new_data['proxies']))
-        # with open(yaml_p, 'w', encoding='utf-8') as f:
-        #     yaml.dump(new_data, f)
-        # print('Done!\n')
+        content_base64 = self.sc.base64_encode(content_raw)
+        content = content_raw
+        write_list = [f'{sub_merge_path}/sub_merge_base64.txt']
+        content_type = set(content_base64)
+        for index in range(len(write_list)):
+            content_write(write_list[index], list(content_type)[index])
+        print(f'Done! Output merged nodes to {sub_merge_path}.')
 
     def geoip_update(self, url):
         print('Downloading Country.mmdb...')
