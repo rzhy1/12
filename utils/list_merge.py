@@ -74,11 +74,16 @@ class SubMerge:
 
 
         print('Merging nodes...\n')
-        content_raw = ''.join(
-            content_list)
+        content_raw = ''.join(content_list)
         content_yaml = self.sc.main(content_raw, 'content', 'YAML', {'dup_rm_enabled': True, 'format_name_enabled': True})
         content_write(yaml_p, content_yaml)
         print(f'Done!')
+        
+        print('Merging nodes...\n')
+        content = ''.join(content_list)
+        params = {'dup_rm_enabled': True, 'format_name_enabled': True}
+        content_yaml = self.sc.main(content, 'content', 'YAML', params)
+        content_write(yaml_p, content_yaml)
         
     def geoip_update(self, url):
         print('Downloading Country.mmdb...')
