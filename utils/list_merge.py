@@ -82,7 +82,7 @@ class SubMerge:
         content_type = list(content_base64)
         for index in range(len(write_list)):
             content_write(write_list[index], content_type[index])
-        print(f'Done! Output merged nodes to {merge_path}.')
+        print('Done!\n')
 
         # # delete CN nodes
         # with open(yaml_p, 'rb') as f:
