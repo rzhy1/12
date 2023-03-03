@@ -80,7 +80,7 @@ class SubMerge:
         # content_yaml = self.sc.main(content_raw, 'content', 'YAML', {'dup_rm_enabled': True, 'format_name_enabled': True})
         # content_write(yaml_p, content_yaml)
         # print(f'Done!')
-    def merge_nodes(content_list, yaml_p):
+        def merge_nodes(content_list, yaml_p):
             content_raw = ''.join(content_list)
             content_yaml = self.sc.main(content_raw, 'content', 'YAML', {'dup_rm_enabled': True, 'format_name_enabled': True})
             content_write(yaml_p, content_yaml)
