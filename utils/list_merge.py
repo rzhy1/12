@@ -46,6 +46,11 @@ class SubMerge:
                 input_list.append(raw_list[index])
         return input_list
         
+    def merge_nodes(content_list, yaml_p):
+        content_raw = ''.join(content_list)
+        content_yaml = self.sc.main(content_raw, 'content', 'YAML', {'dup_rm_enabled': True, 'format_name_enabled': True})
+        content_write(yaml_p, content_yaml)
+        
     def sub_merge(self, url_list):
         content_list = []
         os_call('rm -f ./sub/list/*')
@@ -80,11 +85,7 @@ class SubMerge:
         # content_yaml = self.sc.main(content_raw, 'content', 'YAML', {'dup_rm_enabled': True, 'format_name_enabled': True})
         # content_write(yaml_p, content_yaml)
         # print(f'Done!')
-    def merge_nodes(content_list, yaml_p):
-        content_raw = ''.join(content_list)
-        content_yaml = self.sc.main(content_raw, 'content', 'YAML', {'dup_rm_enabled': True, 'format_name_enabled': True})
-        content_write(yaml_p, content_yaml)
-
+    
         print('Merging nodes...\n')
         with Pool(processes=4) as pool:
             func = partial(merge_nodes, yaml_p=yaml_p)
