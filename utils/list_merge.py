@@ -79,7 +79,7 @@ class SubMerge:
         content_base64 = self.sc.base64_encode(content_raw)
         content_set_base64 = set(self.sc.base64_encode(content) for content in content_set)  # 对去重后的内容进行编码和去重
         write_list = [f'{sub_merge_path}/sub_merge_base64.txt']
-        content_type = content_set_base64
+        content_type = list(content_base64)
         for index in range(len(write_list)):
             content_write(write_list[index], content_type[index])
         print(f'Done! Output merged nodes to {merge_path}.')
