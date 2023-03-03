@@ -87,7 +87,7 @@ class SubMerge:
             content_write(yaml_p, content_yaml)
             print(f'Done!')
 
-        with ThreadPool(processes=1) as pool:
+        with ThreadPool(processes=5) as pool:
             pool.apply_async(write_content, (yaml_p, content_yaml))
 
         # 等待写入操作完成
