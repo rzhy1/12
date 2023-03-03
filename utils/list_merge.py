@@ -9,6 +9,8 @@ import yaml
 from list_update import UpdateUrl
 from sub_convert import SubConvert
 from cv2box.utils import os_call
+from multiprocessing import Pool
+from functools import partial
 
 # 文件路径定义
 Eterniy = './Eternity'
@@ -73,11 +75,22 @@ class SubMerge:
                 f.write(error_msg if 'error_msg' in locals() else content)
 
 
+        # print('Merging nodes...\n')
+        # content_raw = ''.join(content_list)
+        # content_yaml = self.sc.main(content_raw, 'content', 'YAML', {'dup_rm_enabled': True, 'format_name_enabled': True})
+        # content_write(yaml_p, content_yaml)
+        # print(f'Done!')
+    def merge_nodes(content_list, yaml_p):
+            content_raw = ''.join(content_list)
+            content_yaml = self.sc.main(content_raw, 'content', 'YAML', {'dup_rm_enabled': True, 'format_name_enabled': True})
+            content_write(yaml_p, content_yaml)
+
         print('Merging nodes...\n')
-        content_raw = ''.join(content_list)
-        content_yaml = self.sc.main(content_raw, 'content', 'YAML', {'dup_rm_enabled': True, 'format_name_enabled': True})
-        content_write(yaml_p, content_yaml)
-        print(f'Done!')
+        with Pool(processes=4) as pool:
+            func = partial(merge_nodes, yaml_p=yaml_p)
+            pool.map(func, sub_list_remote)
+        print('Done! Output merged nodes to {}.'.format(merge_path))    
+        
         
     def geoip_update(self, url):
         print('Downloading Country.mmdb...')
