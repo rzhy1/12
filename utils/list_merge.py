@@ -9,8 +9,7 @@ import yaml
 from list_update import UpdateUrl
 from sub_convert import SubConvert
 from cv2box.utils import os_call
-from multiprocessing import Pool
-from functools import partial
+from multiprocessing.pool import ThreadPool
 
 # 文件路径定义
 Eterniy = './Eternity'
@@ -26,11 +25,6 @@ def content_write(file, output_type):
     file = open(file, 'w+', encoding='utf-8')
     file.write(output_type)
     file.close()
-    
-def merge_nodes(content_list, yaml_p):
-    content_raw = ''.join(content_list)
-    content_yaml = self.sc.main(content_raw, 'content', 'YAML', {'dup_rm_enabled': True, 'format_name_enabled': True})
-    content_write(yaml_p, content_yaml)
 
 class SubMerge:
     def __init__(self):
@@ -79,17 +73,26 @@ class SubMerge:
                 f.write(error_msg if 'error_msg' in locals() else content)
 
 
-        # print('Merging nodes...\n')
-        # content_raw = ''.join(content_list)
-        # content_yaml = self.sc.main(content_raw, 'content', 'YAML', {'dup_rm_enabled': True, 'format_name_enabled': True})
-        # content_write(yaml_p, content_yaml)
-        # print(f'Done!')
-    
+        #print('Merging nodes...\n')
+        #content_raw = ''.join(content_list)
+        #content_yaml = self.sc.main(content_raw, 'content', 'YAML', {'dup_rm_enabled': True, 'format_name_enabled': True})
+        #content_write(yaml_p, content_yaml)
+        #print(f'Done!')  
         print('Merging nodes...\n')
-        with Pool(processes=4) as pool:
-            func = partial(merge_nodes, yaml_p=yaml_p)
-            pool.map(func, sub_list_remote)
-        print('Done! Output merged nodes to {}.'.format(merge_path))    
+        content_raw = ''.join(content_list)
+        content_yaml = self.sc.main(content_raw, 'content', 'YAML', {'dup_rm_enabled': True, 'format_name_enabled': True})
+
+        # 使用多线程进行文件写入操作
+        def write_content(yaml_p, content_yaml):
+            content_write(yaml_p, content_yaml)
+            print(f'Done!')
+
+        with ThreadPool(processes=1) as pool:
+            pool.apply_async(write_content, (yaml_p, content_yaml))
+
+        # 等待写入操作完成
+        pool.close()
+        pool.join()
         
         
     def geoip_update(self, url):
