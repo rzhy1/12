@@ -74,17 +74,12 @@ class SubMerge:
 
 
         print('Merging nodes...\n')
-        content_raw = ''.join(content_list)
-
-        # Convert to YAML
-        #content_yaml = self.sc.main(content_raw, 'content', 'YAML', {'dup_rm_enabled': True, 'format_name_enabled': True})
-        #yaml_p = f'{sub_merge_path}/sub_merge.yaml'
-        #content_write(yaml_p, content_yaml)
-
-        # Convert to Base64
+        content_raw = ''.join(set(content_list))  # 去重操作
         content_base64 = self.sc.base64_encode(content_raw)
-        base64_p = f'{sub_merge_path}/sub_merge_base64.txt'
-        content_write(base64_p, content_base64)
+        write_list = [f'{sub_merge_path}/sub_merge_base64.txt']
+        content_type = content_base64
+        for index in range(len(write_list)):
+            content_write(write_list[index], content_type)
 
         # # delete CN nodes
         # with open(yaml_p, 'rb') as f:
