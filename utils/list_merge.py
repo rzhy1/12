@@ -29,7 +29,21 @@ def content_write(file, output_type):
 class SubMerge:
     def __init__(self):
         self.sc = SubConvert()
-
+        
+    def read_list(self, json_file, split=False):  # 将 sub_list.json Url 内容读取为列表
+        with open(json_file, 'r', encoding='utf-8') as f:
+            raw_list = json.load(f)
+        input_list = []
+        for index in range(len(raw_list)):
+            if raw_list[index]['enabled']:
+                if split == False:
+                    urls = re.split('\|', raw_list[index]['url'])
+                else:
+                    urls = raw_list[index]['url']
+                raw_list[index]['url'] = urls
+                input_list.append(raw_list[index])
+        return input_list
+        
     def sub_merge(self, url_list):
         content_list = []
         os_call('rm -f ./sub/list/*')
@@ -61,16 +75,16 @@ class SubMerge:
 
         print('Merging nodes...\n')
         content_raw = ''.join(content_list)
-        # content_yaml = self.sc.main(content_raw, 'content', 'YAML',
-        #                             {'dup_rm_enabled': True, 'format_name_enabled': True})
-        # content_write(yaml_p, content_yaml)
 
+        # Convert to YAML
+        #content_yaml = self.sc.main(content_raw, 'content', 'YAML', {'dup_rm_enabled': True, 'format_name_enabled': True})
+        #yaml_p = f'{sub_merge_path}/sub_merge.yaml'
+        #content_write(yaml_p, content_yaml)
+
+        # Convert to Base64
         content_base64 = self.sc.base64_encode(content_raw)
-        content = content_raw
-        write_list = [f'{sub_merge_path}/sub_merge_base64.txt']
-        content_type = ( content_base64)
-        for index in range(len(write_list)):
-            content_write(write_list[index], content_type[index])
+        base64_p = f'{sub_merge_path}/sub_merge_base64.txt'
+        content_write(base64_p, content_base64)
 
         # # delete CN nodes
         # with open(yaml_p, 'rb') as f:
@@ -83,20 +97,6 @@ class SubMerge:
         # with open(yaml_p, 'w', encoding='utf-8') as f:
         #     yaml.dump(new_data, f)
         # print('Done!\n')
-
-    def read_list(self, json_file, split=False):  # 将 sub_list.json Url 内容读取为列表
-        with open(json_file, 'r', encoding='utf-8') as f:
-            raw_list = json.load(f)
-        input_list = []
-        for index in range(len(raw_list)):
-            if raw_list[index]['enabled']:
-                if split == False:
-                    urls = re.split('\|', raw_list[index]['url'])
-                else:
-                    urls = raw_list[index]['url']
-                raw_list[index]['url'] = urls
-                input_list.append(raw_list[index])
-        return input_list
 
     def geoip_update(self, url):
         print('Downloading Country.mmdb...')
