@@ -9,7 +9,7 @@ import yaml
 from list_update import UpdateUrl
 from sub_convert import SubConvert
 from cv2box.utils import os_call
-from multiprocessing.pool import ThreadPool
+import concurrent.futures
 
 # 文件路径定义
 Eterniy = './Eternity'
@@ -80,21 +80,13 @@ class SubMerge:
         #print(f'Done!')  
         print('Merging nodes...\n')
         content_raw = ''.join(content_list)
-        content_yaml = self.sc.main(content_raw, 'content', 'YAML', {'dup_rm_enabled': True, 'format_name_enabled': True})
-
-        # 使用多线程进行文件写入操作
-        def write_content(yaml_p, content_yaml):
-            content_write(yaml_p, content_yaml)
-            print(f'Done!')
-
-        with ThreadPool(processes=1) as pool:
-            pool.apply_async(write_content, (yaml_p, content_yaml))
-
-        # 等待写入操作完成
-        pool.close()
-        pool.join()
-        
-        
+        def merge(content):
+            return self.sc.main(content, 'content', 'YAML', {'dup_rm_enabled': True, 'format_name_enabled': True})
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            content_yaml = list(executor.map(merge, [content_raw]))[0]
+        content_write(yaml_p, content_yaml)
+        print(f'Done!')
+                
     def geoip_update(self, url):
         print('Downloading Country.mmdb...')
         try:
