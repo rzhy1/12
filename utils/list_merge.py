@@ -71,13 +71,7 @@ class SubMerge:
 
             with open(f'{sub_list_path}{ids:0>2d}.txt', 'w+', encoding='utf-8') as f:
                 f.write(error_msg if 'error_msg' in locals() else content)
-
-
-        #print('Merging nodes...\n')
-        #content_raw = ''.join(content_list)
-        #content_yaml = self.sc.main(content_raw, 'content', 'YAML', {'dup_rm_enabled': True, 'format_name_enabled': True})
-        #content_write(yaml_p, content_yaml)
-        #print(f'Done!')  
+ 
         print('Merging nodes...\n')
         content_raw = ''.join(content_list)
         def merge(content):
@@ -103,17 +97,14 @@ class SubMerge:
 
         # 所有节点打印
         for index in range(len(lines)):
-            if lines[index] == '### 所有节点\n': # 目标行内容
-                # 清除旧内容
-                lines.pop(index+1) # 删除节点数量
-
-                with open(f'{self.merge_dir}sub_merge_base64.txt', 'r', encoding='utf-8') as f:
-                    proxies_base64 = f.read()
-                    proxies = base64_decode(proxies_base64)
-                    proxies = proxies.split('\n')
+            if lines[index] == '## 所有节点\n':  # 目标行内容
+                lines.pop(index + 1)  # 删除节点数量
+                with open('./sub/sub_merge_yaml.yaml', 'r', encoding='utf-8') as f:
+                    proxies = f.read()
+                    proxies = proxies.split('\n- ')
                     top_amount = len(proxies) - 1
-                    f.close()
-                lines.insert(index+1, f'合并节点总数: `{top_amount}`\n')
+
+                lines.insert(index + 1, f'合并节点总数: `{top_amount}`\n')
                 break
         
         # 写入 README 内容
