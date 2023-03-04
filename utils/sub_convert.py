@@ -214,15 +214,13 @@ class SubConvert:
         proxies_list = sub_content['proxies']
 
         # 节点去重
-        def remove_duplicates(proxy):
-            return proxy['server']
         if dup_rm_enabled:
-            with Pool() as p:
-                unique_servers = p.map(remove_duplicates, proxies_list)
-            unique_servers = set(unique_servers)
-            proxies_list = [{'server': server} for server in unique_servers]
-            length = len(proxies_list) + len(unique_servers)
-            rm_count = length - len(unique_servers)
+            proxies_set = set()
+            length = len(proxies_list)
+            for proxy in proxies_list:
+                proxies_set.add(proxy['server'])
+            proxies_list = [{'server': proxy} for proxy in proxies_set]
+            rm_count = length - len(proxies_list)
             print(f'去重完成，原代理数量 {length}，重复数量 {rm_count}，去重后数量 {len(proxies_list)}')
 
         url_list = []
