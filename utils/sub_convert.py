@@ -220,7 +220,7 @@ class SubConvert:
                 for i in range(start, end):
                     proxies_set.add((proxies_list[i]['server'], proxies_list[i]['port']))
             threads = []
-            num_threads = 4 # adjust this value as needed
+            num_threads = 10 # adjust this value as needed
             chunk_size = length // num_threads
             start = 0
             for i in range(num_threads):
