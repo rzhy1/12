@@ -4,7 +4,7 @@ import base64
 import json
 import re
 import yaml
-import multiprocessing
+import threading
 import geoip2.database
 import requests
 import socket
@@ -213,22 +213,12 @@ class SubConvert:
             sub_content = self.format(input)
         proxies_list = sub_content['proxies']
 
-        if dup_rm_enabled: #去重
+        if dup_rm_enabled: # 去重
             proxies_set = set()
             length = len(proxies_list)
-            with multiprocessing.Manager() as manager:
-                server_dict = manager.dict()
-                # 使用进程池处理数据
-                with multiprocessing.Pool(processes=4) as pool:
-                    for proxy in proxies_list:
-                        server = proxy['server']
-                        port = proxy['port']
-                        if server not in server_dict:
-                            server_dict[server] = set()
-                        server_dict[server].add(port)
-                    for server, ports in server_dict.items():
-                        proxies_set.add((server, min(ports)))  # 取最小端口
-            proxies_list = [{'server': proxy[0], 'port': proxy[1]} for proxy in proxies_set]
+            for proxy in proxies_list:
+                proxies_set.add(proxy['server'])
+            proxies_list = [{'server': proxy} for proxy in proxies_set]
             rm_count = length - len(proxies_list)
             print(f'去重完成，原代理数量 {length}，重复数量 {rm_count}，去重后数量 {len(proxies_list)}')
 
