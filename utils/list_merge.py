@@ -84,6 +84,7 @@ class SubMerge:
     def geoip_update(self, url):
         print('Downloading Country.mmdb...')
         try:
+            url = "https://raw.githubusercontent.com/Loyalsoldier/geoip/release/Country.mmdb"
             request.urlretrieve(url, './utils/Country.mmdb')
             print('Success!\n')
         except Exception:
@@ -103,22 +104,11 @@ class SubMerge:
                     proxies = f.read()
                     proxies = proxies.split('\n- ')
                     top_amount = len(proxies) - 1
-
                 lines.insert(index + 1, f'合并节点总数: `{top_amount}`\n')
                 break
         
         # 写入 README 内容
         with open(readme_file, 'w', encoding='utf-8') as f:
             data = ''.join(lines)
-            print('完成!\n')
             f.write(data)
-
-
-if __name__ == '__main__':
-    UpdateUrl().update_main()
-    sm = SubMerge()
-    # sm.geoip_update('https://raw.githubusercontent.com/Loyalsoldier/geoip/release/Country.mmdb')
-
-    sub_list_remote = sm.read_list(sub_list_json, split=True)
-    sm.sub_merge(sub_list_remote)
-    sm.readme_update(readme, sub_list_remote)
+            print('完成!\n')
