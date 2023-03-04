@@ -4,13 +4,14 @@ import base64
 import json
 import re
 import yaml
-
+import threading
 import geoip2.database
 import requests
 import socket
 import urllib.parse
 from requests.adapters import HTTPAdapter
 from utils import EMOJI
+
 
 
 class SubConvert:
@@ -215,9 +216,22 @@ class SubConvert:
         if dup_rm_enabled: # 去重
             proxies_set = set()
             length = len(proxies_list)
-            for proxy in proxies_list:
-                proxies_set.add((proxy['server'], proxy['port']))
-            proxies_list = [{'server': proxy[0], 'port': proxy[1]} for proxy in proxies_set]
+            def worker(start, end):
+                for i in range(start, end):
+                    proxies_set.add((proxies_list[i]['server'], proxies_list[i]['port']))
+            threads = []
+            num_threads = 4 # adjust this value as needed
+            chunk_size = length // num_threads
+            start = 0
+            for i in range(num_threads):
+                end = start + chunk_size if i != num_threads - 1 else length
+                t = threading.Thread(target=worker, args=(start, end))
+                threads.append(t)
+                t.start()
+                start = end
+            for t in threads:
+                t.join()
+                proxies_list = [{'server': proxy[0], 'port': proxy[1]} for proxy in proxies_set]
             rm_count = length - len(proxies_list)
             print(f'去重完成，原代理数量 {length}，去重后数量 {len(proxies_list)}，重复数量 {rm_count}')
 
