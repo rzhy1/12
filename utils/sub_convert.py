@@ -4,12 +4,12 @@ import base64
 import json
 import re
 import yaml
-import multiprocessing
 import geoip2.database
 import requests
 import socket
 import urllib.parse
 from requests.adapters import HTTPAdapter
+from multiprocessing import Pool
 from utils import EMOJI
 
 
@@ -213,23 +213,16 @@ class SubConvert:
             sub_content = self.format(input)
         proxies_list = sub_content['proxies']
 
-        # 去重
-        def remove_duplicates(proxies_list):
-            proxies_set = set()
-            for proxy in proxies_list:
-                proxies_set.add(proxy['server'])
-            return [{'server': proxy} for proxy in proxies_set]
-
+        # 节点去重
+        def remove_duplicates(proxy):
+            return proxy['server']
         if dup_rm_enabled:
-            length = len(proxies_list)
-            pool_size = multiprocessing.cpu_count()
-            chunk_size = (length + pool_size - 1) // pool_size
-            pool = multiprocessing.Pool(processes=pool_size)
-            results = pool.map(remove_duplicates, [proxies_list[i:i+chunk_size] for i in range(0, length, chunk_size)])
-            pool.close()
-            pool.join()
-            proxies_list = [proxy for proxies in results for proxy in proxies]
-            rm_count = length - len(proxies_list)
+            with Pool() as p:
+                unique_servers = p.map(remove_duplicates, proxies_list)
+            unique_servers = set(unique_servers)
+            proxies_list = [{'server': server} for server in unique_servers]
+            length = len(proxies_list) + len(unique_servers)
+            rm_count = length - len(unique_servers)
             print(f'去重完成，原代理数量 {length}，重复数量 {rm_count}，去重后数量 {len(proxies_list)}')
 
         url_list = []
