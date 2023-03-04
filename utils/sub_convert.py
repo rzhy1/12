@@ -213,7 +213,7 @@ class SubConvert:
             sub_content = self.format(input)
         proxies_list = sub_content['proxies']
 
-       if dup_rm_enabled: #去重
+        if dup_rm_enabled: #去重
             proxies_set = set()
             length = len(proxies_list)
             with multiprocessing.Manager() as manager:
