@@ -110,5 +110,13 @@ class SubMerge:
         # 写入 README 内容
         with open(readme_file, 'w', encoding='utf-8') as f:
             data = ''.join(lines)
-            f.write(data)
             print('完成!\n')
+            f.write(data)
+
+
+if __name__ == '__main__':
+    UpdateUrl().update_main()
+    sm = SubMerge()
+    sub_list_remote = sm.read_list(sub_list_json, split=True)
+    sm.sub_merge(sub_list_remote)
+    sm.readme_update(readme, sub_list_remote)
