@@ -208,7 +208,7 @@ class SubConvert:
         # 区域判断(Clash YAML): https://blog.csdn.net/CSDN_duomaomao/article/details/89712826 (ip-api)
         if isinstance(input, dict):
             sub_content = input
-        else1:
+        else:
             sub_content = self.format(input)
         proxies_list = sub_content['proxies']
 
