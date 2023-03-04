@@ -233,7 +233,7 @@ class SubConvert:
                 t.join()
                 proxies_list = [{'server': proxy[0], 'port': proxy[1]} for proxy in proxies_set]
             rm_count = length - len(proxies_list)
-            print(f'去重完成，原代理数量 {length}，去重后数量 {len(proxies_list)}，重复数量 {rm_count}')
+            print(f'去重完成，原代理数量 {length}，重复数量 {rm_count}，去重后数量 {len(proxies_list)}')
 
         url_list = []
 
