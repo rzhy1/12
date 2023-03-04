@@ -4,7 +4,7 @@ import base64
 import json
 import re
 import yaml
-import threading
+import concurrent.futures
 import geoip2.database
 import requests
 import socket
@@ -216,22 +216,20 @@ class SubConvert:
         if dup_rm_enabled: # 去重
             proxies_set = set()
             length = len(proxies_list)
-            def worker(start, end):
-                for i in range(start, end):
-                    proxies_set.add((proxies_list[i]['server'], proxies_list[i]['port']))
+    
+            def add_proxy_to_set(proxy):
+                proxies_set.add((proxy['server'], proxy['port']))
+        
             threads = []
-            num_threads = 10 # adjust this value as needed
-            chunk_size = length // num_threads
-            start = 0
-            for i in range(num_threads):
-                end = start + chunk_size if i != num_threads - 1 else length
-                t = threading.Thread(target=worker, args=(start, end))
+            for proxy in proxies_list:
+                t = threading.Thread(target=add_proxy_to_set, args=(proxy,))
                 threads.append(t)
                 t.start()
-                start = end
+    
             for t in threads:
                 t.join()
-                proxies_list = [{'server': proxy[0], 'port': proxy[1]} for proxy in proxies_set]
+        
+            proxies_list = [{'server': proxy[0], 'port': proxy[1]} for proxy in proxies_set]
             rm_count = length - len(proxies_list)
             print(f'去重完成，原代理数量 {length}，重复数量 {rm_count}，去重后数量 {len(proxies_list)}')
 
