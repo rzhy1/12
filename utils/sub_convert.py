@@ -212,14 +212,14 @@ class SubConvert:
             sub_content = self.format(input)
         proxies_list = sub_content['proxies']
 
-        if dup_rm_enabled:  # 去重
+        if dup_rm_enabled: # 去重
             proxies_set = set()
-            unique_proxies = []
+            length = len(proxies_list)
             for proxy in proxies_list:
-                if proxy['server'] not in proxies_set:
-                    unique_proxies.append(proxy)
-                    proxies_set.add(proxy['server'])
-            proxies_list = unique_proxies
+                proxies_set.add((proxy['server'], proxy['port']))
+            proxies_list = [{'server': proxy[0], 'port': proxy[1]} for proxy in proxies_set]
+            rm_count = length - len(proxies_list)
+            print(f'去重完成，原代理数量 {length}，去重后数量 {len(proxies_list)}，重复数量 {rm_count}')
 
         url_list = []
 
