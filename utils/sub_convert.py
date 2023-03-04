@@ -4,7 +4,7 @@ import base64
 import json
 import re
 import yaml
-import concurrent.futures
+import threading
 import geoip2.database
 import requests
 import socket
@@ -213,19 +213,14 @@ class SubConvert:
             sub_content = self.format(input)
         proxies_list = sub_content['proxies']
 
-        if dup_rm_enabled:  # 去重
-            raw_length = len(proxies_list)
-            unique_proxies = []
-            seen_servers = set()
-            with concurrent.futures.ThreadPoolExecutor() as executor:
-                futures = []
-                for proxy in proxies_list:
-                    if proxy['server'] not in seen_servers:
-                        seen_servers.add(proxy['server'])
-                        unique_proxies.append(proxy)
-            rm_count = raw_length - len(unique_proxies)
-            print(f'去重完成，原代理数量 {raw_length}，重复数量 {rm_count}，去重后数量 {len(unique_proxies)}')
-            proxies_list = unique_proxies
+        if dup_rm_enabled: # 去重
+            proxies_set = set()
+            length = len(proxies_list)
+            for proxy in proxies_list:
+                proxies_set.add((proxy['server']))
+            proxies_list = [{'server': proxy[0]} for proxy in proxies_set]
+            rm_count = length - len(proxies_list)
+            print(f'去重完成，原代理数量 {length}，重复数量 {rm_count}，去重后数量 {len(proxies_list)}')
 
         url_list = []
 
