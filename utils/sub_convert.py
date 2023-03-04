@@ -212,14 +212,27 @@ class SubConvert:
             sub_content = self.format(input)
         proxies_list = sub_content['proxies']
 
-        if dup_rm_enabled: # 去重
-            proxies_set = set()
+        if dup_rm_enabled:  # 去重
+            begin = 0
+            raw_length = len(proxies_list)
             length = len(proxies_list)
-            for proxy in proxies_list:
-                proxies_set.add(proxy['server'])
-            proxies_list = [{'server': proxy} for proxy in proxies_set]
-            rm_count = length - len(proxies_list)
-            print(f'去重完成，原代理数量 {length}，重复数量 {rm_count}，去重后数量 {len(proxies_list)}')
+            while begin < length:
+                if (begin + 1) == 1:
+                    print(f'\n-----去重开始-----\n起始数量{length}')
+                elif (begin + 1) % 100 == 0:
+                    print(f'当前基准{begin + 1}-----当前数量{length}')
+                elif (begin + 1) == length and (begin + 1) % 100 != 0:
+                    repetition = raw_length - length
+                    print(f'当前基准{begin + 1}-----当前数量{length}\n重复数量{repetition}\n-----去重完成-----\n')
+                proxy_compared = proxies_list[begin]
+
+                begin_2 = begin + 1
+                while begin_2 <= (length - 1):
+                    if proxy_compared['server'] == proxies_list[begin_2]['server']:
+                        proxies_list.pop(begin_2)
+                        length -= 1
+                    begin_2 += 1
+                begin += 1
 
         url_list = []
 
