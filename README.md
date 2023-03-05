@@ -1,5 +1,3 @@
-# TopFreeProxies
-
 ## 仓库介绍
 
 [TopFreeProxies](https://github.com/ykk648/TopFreeProxies)复活版，不再占用大量github actions，需要时手动开启action。
