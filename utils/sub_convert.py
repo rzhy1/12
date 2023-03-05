@@ -236,38 +236,38 @@ class SubConvert:
 
         url_list = []
 
-        for proxy_index, proxy in enumerate(proxies_list):  # 改名
-            if proxy['server'] != '127.0.0.1':
-                if format_name_enabled:
-                    server = proxy['server']
-                    if server.replace('.', '').isdigit():
-                        ip = server
-                    else:
-                        try:
-                            # https://cloud.tencent.com/developer/article/1569841
-                            ip = socket.gethostbyname(server)
-                        except Exception:
-                            ip = server
+        for index, proxy in enumerate(proxies_list):
+            if proxy['server'] == '127.0.0.1':
+                continue
 
-                    with geoip2.database.Reader('./utils/Country.mmdb') as ip_reader:
-                        try:
-                            response = ip_reader.country(ip)
-                            country_code = response.country.iso_code
-                        except Exception:
-                            continue
+            # 格式化名称
+            if format_name_enabled:
+                server = proxy['server']
+                if server.replace('.', '').isdigit():
+                    ip = server
+                else:
+                    try:
+                        ip = socket.gethostbyname(server)
+                    except socket.gaierror:
+                        continue
 
-                    if country_code in ['CLOUDFLARE', 'PRIVATE']:
-                        country_code = 'RELAY'
+            with geoip2.database.Reader('./utils/Country.mmdb') as reader:
+                    try:
+                        response = reader.country(ip)
+                        country_code = response.country.iso_code
+                    except geoip2.errors.AddressNotFoundError:
+                        continue
 
-                    if country_code in EMOJI:
-                        name_emoji = EMOJI[country_code]
-                    else:
-                        name_emoji = EMOJI['NOWHERE']
+                if country_code in ['CLOUDFLARE', 'PRIVATE']:
+                    country_code = 'RELAY'
 
-                    proxy['name'] = f'{name_emoji}{country_code}-{ip}-{proxy_index:0>4d}'
+                emoji = EMOJI.get(country_code, EMOJI['NOWHERE'])
+                name = f'{emoji}{country_code}-{ip}-{index:0>4d}'
+                proxy['name'] = name
 
-                proxy_str = str(proxy)
-                url_list.append(proxy_str)
+            url = str(proxy)
+            url_list.append(url)
+
 
         yaml_content_dic = {'proxies': url_list}
         # yaml.dump 显示中文方法 https://blog.csdn.net/weixin_41548578/article/details/90651464 yaml.dump 各种参数 https://blog.csdn.net/swinfans/article/details/88770119
