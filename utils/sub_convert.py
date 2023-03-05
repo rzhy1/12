@@ -236,37 +236,39 @@ class SubConvert:
 
         url_list = []
 
-        for index, proxy in enumerate(proxies_list):
-            if proxy['server'] == '127.0.0.1':
-                continue
+        for proxy_index, proxy in enumerate(proxies_list):  # 改名
+            if proxy['server'] != '127.0.0.1':
+                if format_name_enabled:
+                    server = proxy['server']
+                    if server.replace('.', '').isdigit():
+                        ip = server
+                    else:
+                        try:
+                            # https://cloud.tencent.com/developer/article/1569841
+                            ip = socket.gethostbyname(server)
+                        except Exception:
+                            ip = server
 
-            # 格式化名称
-            if format_name_enabled:
-                server = proxy['server']
-                if server.replace('.', '').isdigit():
-                    ip = server
-                else:
-                    try:
-                        ip = socket.gethostbyname(server)
-                    except socket.gaierror:
-                        continue
+                    with geoip2.database.Reader('./utils/Country.mmdb') as ip_reader:
+                        try:
+                            response = ip_reader.country(ip)
+                            country_code = response.country.iso_code
+                        except Exception:
+                            continue
 
-                with geoip2.database.Reader('./utils/Country.mmdb') as reader:
-                    try:
-                        response = reader.country(ip)
-                        country_code = response.country.iso_code
-                    except geoip2.errors.AddressNotFoundError:
-                        continue
+                    if country_code in ['CLOUDFLARE', 'PRIVATE']:
+                        country_code = 'RELAY'
 
-                if country_code in ['CLOUDFLARE', 'PRIVATE']:
-                    country_code = 'RELAY'
+                    if country_code in EMOJI:
+                        name_emoji = EMOJI[country_code]
+                    else:
+                        name_emoji = EMOJI['NOWHERE']
 
-                emoji = EMOJI.get(country_code, EMOJI['NOWHERE'])
-                name = f'{emoji}{country_code}-{ip}-{index:0>4d}'
-                proxy['name'] = name
+                    proxy['name'] = f'{name_emoji}{country_code}-{ip}-{proxy_index:0>4d}'
 
-            url = str(proxy)
-            url_list.append(url)
+                proxy_str = str(proxy)
+                url_list.append(proxy_str)
+
 
 
         yaml_content_dic = {'proxies': url_list}
