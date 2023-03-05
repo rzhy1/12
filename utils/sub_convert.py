@@ -251,7 +251,7 @@ class SubConvert:
                     except socket.gaierror:
                         continue
 
-            with geoip2.database.Reader('./utils/Country.mmdb') as reader:
+                with geoip2.database.Reader('./utils/Country.mmdb') as reader:
                     try:
                         response = reader.country(ip)
                         country_code = response.country.iso_code
