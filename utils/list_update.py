@@ -64,27 +64,22 @@ class UpdateUrl():
             url_end = '.txt'
             new_url = url_front + today + url_end
         if id == 28:
-            today, this_month, this_year = datetime.today().strftime('%d %m %Y').split()
-            url_date = this_year + this_month + today
+            url_date = datetime.today().strftime('%Y%m%d')
             url = "https://www.cfmem.com/"
-            try:
-                response = requests.get(url)
-                soup = BeautifulSoup(response.text, "html.parser")
-                link = soup.find("a", href=lambda href: href and url_date in href)
-                if link:
-                    link_url = urljoin(url, link["href"])
-                    link_response = requests.get(link_url)
-                    link_soup = BeautifulSoup(link_response.text, "html.parser")
-                    txt_link = link_soup.find("a", href=lambda href: href and href.startswith("https://") and href.endswith(".txt"))
-                    if txt_link:
-                        txt_link_url = txt_link["href"]
-                        txt_response = requests.get(txt_link_url)
-                        if txt_response.status_code == 200:
-                            new_url = txt_link_url
-            except requests.exceptions.RequestException as e:
-                print("An error occurred:", e)
-            else:
-                new_url = None            
+            response = requests.get(url)
+            soup = BeautifulSoup(response.text, "html.parser")
+            link = soup.find("a", href=lambda href: href and url_date in href)
+            if link:
+                link_url = link["href"]
+                link_response = requests.get(link_url)
+                link_soup = BeautifulSoup(link_response.text, "html.parser")
+                new_url = None
+                for string in link_soup.stripped_strings:
+                    if string.startswith("v2ray订阅链接") and string.endswith(".txt"):
+                        start = string.index("https://")
+                        end = string.index(".txt") + 4
+                        new_url = string[start:end]
+                        break           
         if id == 32:
             today = datetime.today().strftime('%Y%m%d')
             this_month = datetime.today().strftime('%m')
