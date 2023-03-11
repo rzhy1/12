@@ -3,12 +3,13 @@
 import json
 import os
 import re
-from urllib import request
 import yaml
+import requests
 
 from list_update import UpdateUrl
 from sub_convert import SubConvert
 from cv2box.utils import os_call
+from urllib import request
 import concurrent.futures
 
 # 文件路径定义
