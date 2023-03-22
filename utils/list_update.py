@@ -63,6 +63,20 @@ class UpdateUrl():
             url_front = 'https://raw.githubusercontent.com/pojiezhiyuanjun/freev2/master/'
             url_end = '.txt'
             new_url = url_front + today + url_end
+            
+        if id == 11:
+            this_month = datetime.today().strftime('%m').lstrip('0')
+            url = "https://agit.ai/12/a/src/branch/master"
+            response = requests.get(url)
+            soup = BeautifulSoup(response.content, "html.parser")
+            latest_URL = None
+            new_url = None
+            for row in soup.find_all("tr"):
+                link = row.find("a")
+                if link and link.text.startswith(this_month + "."):
+                    latest_URL = url + "/" + link.text
+                    new_url = latest_URL.replace("/src/", "/raw/")
+                    
         if id == 28:
             url_date = datetime.today().strftime('%Y%m%d')
             url = "https://www.cfmem.com/"
