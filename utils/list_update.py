@@ -73,7 +73,7 @@ class UpdateUrl():
             new_url = None
             for row in soup.find_all("tr"):
                 link = row.find("a")
-                if link and link.text.startswith(this_month + "."):
+                if link and link.text.startswith(this_month):
                     latest_URL = url + "/" + link.text
                     new_url = latest_URL.replace("/src/", "/raw/")
                     
