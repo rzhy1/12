@@ -82,7 +82,29 @@ class SubMerge:
         content_write(yaml_p, content_yaml)
         print(f'Done!')
 
+    def check_and_clean_yaml(file_path):
+        with open(file_path, 'r') as file:
+            try:
+                yaml.safe_load(file)
+            except yaml.YAMLError as e:
+                if hasattr(e, 'problem_mark'):
+                    line = e.problem_mark.line + 1
+                    print(f"Error in line {line}: {e}")
+                    # 处理不符合要求的行，这里可以根据需要进行相应的操作
+                    # 删除行示例：
+                    # clean_lines = [line for i, line in enumerate(file) if i != e.problem_mark.line]
+                    # 将修改后的内容写回到文件
+                    with open(file_path, 'w') as output_file:
+                        output_file.writelines(clean_lines)
+            else:
+                print("YAML file is valid.")
 
+    # 指定要检查和清理的文件路径
+    file_path = 'your_file.yaml'
+
+    # 调用函数进行检查和清理
+    check_and_clean_yaml(file_path)
+    
     def remove_lines_with_strings(file_path, strings_to_remove):
         # 读取 YAML 文件
         with open(file_path, 'r') as file:
