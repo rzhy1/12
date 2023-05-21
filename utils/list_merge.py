@@ -81,6 +81,27 @@ class SubMerge:
             content_yaml = list(executor.map(merge, [content_raw]))[0]
         content_write(yaml_p, content_yaml)
         print(f'Done!')
+
+
+    def remove_lines_with_strings(file_path, strings_to_remove):
+        # 读取 YAML 文件
+        with open(file_path, 'r') as file:
+            data = yaml.safe_load(file)
+
+        # 过滤包含特定字符串的行
+        filtered_data = [entry for entry in data if not any(string in entry for string in strings_to_remove)]
+
+        # 保存过滤后的数据到文件
+        with open(file_path, 'w') as file:
+            yaml.dump(filtered_data, file)
+
+    # 指定要处理的文件路径和要去除的字符串列表
+    file_path = './sub/sub_merge_yaml.yaml'
+    strings_to_remove = ['""', 'github.com']
+
+    # 调用函数进行行过滤并保存文件
+    remove_lines_with_strings(file_path, strings_to_remove)
+
                 
     def geoip_update(self, url):
         print('Downloading Country.mmdb...')
