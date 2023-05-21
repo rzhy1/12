@@ -92,7 +92,7 @@ class SubMerge:
                     print(f"Error in line {line}: {e}")
                     # 处理不符合要求的行，这里可以根据需要进行相应的操作
                     # 删除行示例：
-                    # clean_lines = [line for i, line in enumerate(file) if i != e.problem_mark.line]
+                    clean_lines = [line for i, line in enumerate(file) if i != e.problem_mark.line]
                     # 将修改后的内容写回到文件
                     with open(file_path, 'w') as output_file:
                         output_file.writelines(clean_lines)
