@@ -100,7 +100,7 @@ class SubMerge:
                 print("YAML file is valid.")
 
     # 指定要检查和清理的文件路径
-    file_path = 'your_file.yaml'
+    file_path = './sub/sub_merge_yaml.yaml'
 
     # 调用函数进行检查和清理
     check_and_clean_yaml(file_path)
