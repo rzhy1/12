@@ -134,21 +134,19 @@ class SubMerge:
             yaml_content = f.read()
             lines = yaml_content.split('\n')
         
-        for line in lines:
-            if '%' in line:  # 跳过包含无法识别字符的行
-                continue
+        def ping_node(n):
+            if n.get('type') == 'ss' or n.get('type') == 'vmess':
+                ping_result = subprocess.run(['ping', '-c', '4', '-W', '1', '-s', '32', n.get('server')], capture_output=True, text=True)
+                if ping_result.returncode == 0:
+                    return n
 
-            try:
-                node = yaml.safe_load(line)
-                if isinstance(node, list):  # 检查节点是否为列表
-                    for n in node:
-                        if isinstance(n, dict):  # 检查节点是否为字典
-                            if n.get('type') == 'ss' or n.get('type') == 'vmess':  # 获取节点类型
-                                ping_result = subprocess.run(['ping', '-c', '4', '-W', '1', '-s', '32', n.get('server')], capture_output=True, text=True)
-                                if ping_result.returncode == 0:
-                                    ping_nodes.append(n)
-            except yaml.YAMLError:
-                pass  # 跳过解析错误的行
+        ping_nodes = []
+        max_workers = 100  # 指定线程数
+        with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+            results = executor.map(ping_node, (yaml.safe_load(line) for line in lines if '%' not in line))
+            for result in results:
+                if result:
+                    ping_nodes.append(result)
 
         if ping_nodes:
             with open(ping_file, 'w', encoding='utf-8') as f:
