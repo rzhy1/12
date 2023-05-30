@@ -52,6 +52,12 @@ class SubMerge:
 
         for index, url_info in enumerate(url_list):
             url, ids, remarks = url_info['url'], url_info['id'], url_info['remarks']
+            
+            # 跳过 Trojan 节点
+            if 'trojan://' in url:
+                print(f'Skipping Trojan node: {remarks}')
+                continue
+                
             content = self.sc.convert_remote(url, output_type='url', host='http://127.0.0.1:25500')
             if content.startswith('Url 解析错误'):
                 content = self.sc.main(self.read_list(sub_list_json)[index]['url'], input_type='url', output_type='url')
@@ -117,28 +123,30 @@ class SubMerge:
             print('完成!\n')
             f.write(data)
 
-    def ping_nodes(self, node_list, output_file):
-        print('Pinging nodes...')
-        reachable_nodes = []
+    def ping_nodes(self):
+        with open(yaml_p, 'r', encoding='utf-8') as f:
+            yaml_content = f.read()
 
-        def ping_node(node):
-            url = node['url']
-            try:
-                response = requests.head(url, timeout=5)
-                if response.status_code == 200:
-                    reachable_nodes.append(url)
-                    print(f'Node {url} is reachable.')
-            except:
-                print(f'Node {url} is not reachable.')
+        yaml_data = yaml.safe_load(yaml_content)
 
-        with concurrent.futures.ThreadPoolExecutor() as executor:
-            executor.map(ping_node, node_list)
+        pinged_nodes = []
 
-        with open(output_file, 'w', encoding='utf-8') as f:
-            for url in reachable_nodes:
-                f.write(f'{url}\n')
+        if 'proxies' in yaml_data:
+            proxies = yaml_data['proxies']
 
-        print(f'Ping results saved to {output_file}.')
+            for proxy in proxies:
+                if 'name' in proxy and 'server' in proxy:
+                    name = proxy['name']
+                    server = proxy['server']
+
+                    try:
+                        response = requests.get(server, timeout=3)
+                        if response.status_code == 200:
+                            pinged_nodes.append((name, server))
+                    except requests.exceptions.RequestException:
+                        pass
+
+        return pinged_nodes
 
 
 if __name__ == '__main__':
@@ -147,4 +155,11 @@ if __name__ == '__main__':
     sub_list_remote = sm.read_list(sub_list_json, split=True)
     sm.sub_merge(sub_list_remote)
     sm.readme_update(readme, sub_list_remote)
-    sm.ping_nodes(sub_list_remote, './reachable_nodes.txt')
+
+    # Ping nodes and save the nodes that respond successfully to a file
+    pinged_nodes = sm.ping_nodes()
+    with open('pinged_nodes.txt', 'w', encoding='utf-8') as f:
+        for node in pinged_nodes:
+            f.write(f'{node[0]}: {node[1]}\n')
+
+    print('Ping nodes complete!')
