@@ -123,30 +123,27 @@ class SubMerge:
             print('完成!\n')
             f.write(data)
 
-    def ping_nodes(self):
+    def ping_test(self):
+        print('开始进行Ping测试...\n')
+        ping_file = './ping_result.txt'
+        ping_nodes = []
+
         with open(yaml_p, 'r', encoding='utf-8') as f:
             yaml_content = f.read()
+            nodes = yaml.safe_load(yaml_content)
+        
+        for node in nodes:
+            if node.get('type') == 'ss' or node.get('type') == 'vmess':
+                ping_result = subprocess.run(['ping', '-c', '4', '-W', '1', '-s', '32', node.get('server')], capture_output=True, text=True)
+                if ping_result.returncode == 0:
+                    ping_nodes.append(node)
 
-        yaml_data = yaml.safe_load(yaml_content)
-
-        pinged_nodes = []
-
-        if 'proxies' in yaml_data:
-            proxies = yaml_data['proxies']
-
-            for proxy in proxies:
-                if 'name' in proxy and 'server' in proxy:
-                    name = proxy['name']
-                    server = proxy['server']
-
-                    try:
-                        response = requests.get(server, timeout=3)
-                        if response.status_code == 200:
-                            pinged_nodes.append((name, server))
-                    except requests.exceptions.RequestException:
-                        pass
-
-        return pinged_nodes
+        if ping_nodes:
+            with open(ping_file, 'w', encoding='utf-8') as f:
+                f.write(yaml.dump(ping_nodes))
+            print(f'已将Ping通的节点保存至 {ping_file}\n')
+        else:
+            print('没有Ping通的节点\n')
 
 
 if __name__ == '__main__':
@@ -155,11 +152,5 @@ if __name__ == '__main__':
     sub_list_remote = sm.read_list(sub_list_json, split=True)
     sm.sub_merge(sub_list_remote)
     sm.readme_update(readme, sub_list_remote)
+    sm.ping_test()
 
-    # Ping nodes and save the nodes that respond successfully to a file
-    pinged_nodes = sm.ping_nodes()
-    with open('pinged_nodes.txt', 'w', encoding='utf-8') as f:
-        for node in pinged_nodes:
-            f.write(f'{node[0]}: {node[1]}\n')
-
-    print('Ping nodes complete!')
