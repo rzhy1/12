@@ -27,11 +27,10 @@ def content_write(file, output_type):
     file.write(output_type)
     file.close()
 
-
 class SubMerge:
     def __init__(self):
         self.sc = SubConvert()
-
+        
     def read_list(self, json_file, split=False):  # 将 sub_list.json Url 内容读取为列表
         with open(json_file, 'r', encoding='utf-8') as f:
             raw_list = json.load(f)
@@ -45,7 +44,7 @@ class SubMerge:
                 raw_list[index]['url'] = urls
                 input_list.append(raw_list[index])
         return input_list
-
+        
     def sub_merge(self, url_list):
         content_list = []
         os_call('rm -f ./sub/list/*')
@@ -73,18 +72,16 @@ class SubMerge:
 
             with open(f'{sub_list_path}{ids:0>2d}.txt', 'w+', encoding='utf-8') as f:
                 f.write(error_msg if 'error_msg' in locals() else content)
-
+ 
         print('Merging nodes...\n')
         content_raw = ''.join(content_list)
-
         def merge(content):
             return self.sc.main(content, 'content', 'YAML', {'dup_rm_enabled': True, 'format_name_enabled': True})
-
         with concurrent.futures.ThreadPoolExecutor() as executor:
             content_yaml = list(executor.map(merge, [content_raw]))[0]
         content_write(yaml_p, content_yaml)
         print(f'Done!')
-
+                
     def geoip_update(self, url):
         print('Downloading Country.mmdb...')
         try:
@@ -110,35 +107,12 @@ class SubMerge:
                     top_amount = len(proxies) - 1
                 lines.insert(index + 1, f'合并节点总数: `{top_amount}`\n')
                 break
-
+        
         # 写入 README 内容
         with open(readme_file, 'w', encoding='utf-8') as f:
             data = ''.join(lines)
             print('完成!\n')
             f.write(data)
-
-    def ping_nodes(self, node_list, output_file):
-        print('Pinging nodes...')
-        reachable_nodes = []
-
-        def ping_node(node):
-            url = node['url']
-            try:
-                response = requests.head(url, timeout=5)
-                if response.status_code == 200:
-                    reachable_nodes.append(url)
-                    print(f'Node {url} is reachable.')
-            except:
-                print(f'Node {url} is not reachable.')
-
-        with concurrent.futures.ThreadPoolExecutor() as executor:
-            executor.map(ping_node, node_list)
-
-        with open(output_file, 'w', encoding='utf-8') as f:
-            for url in reachable_nodes:
-                f.write(f'{url}\n')
-
-        print(f'Ping results saved to {output_file}.')
 
 
 if __name__ == '__main__':
@@ -147,4 +121,3 @@ if __name__ == '__main__':
     sub_list_remote = sm.read_list(sub_list_json, split=True)
     sm.sub_merge(sub_list_remote)
     sm.readme_update(readme, sub_list_remote)
-    sm.ping_nodes(sub_list_remote, './reachable_nodes.txt')
