@@ -20,6 +20,7 @@ sub_list_json = './sub/sub_list.json'
 sub_merge_path = './sub/'
 sub_list_path = './sub/list/'
 yaml_p = '{}/sub_merge_yaml.yaml'.format(sub_merge_path)
+ping_result_file = './sub/ping_result.json'
 
 
 def content_write(file, output_type):
@@ -81,6 +82,27 @@ class SubMerge:
             content_yaml = list(executor.map(merge, [content_raw]))[0]
         content_write(yaml_p, content_yaml)
         print(f'Done!')
+        
+	def ping_test(self, region='chinaeast'):
+		with open(yaml_p, 'r', encoding='utf-8') as f:
+			proxies = yaml.load(f, Loader=yaml.FullLoader)
+
+		ping_result = []
+		for proxy in proxies:
+			host = proxy['name']
+			result = os.popen(f'ping -c 5 -W 3 {host}.google.com')
+			lines = result.readlines()
+			if len(lines) > 1:
+				last_line = lines[-1].strip()
+				if last_line.startswith('rtt'):
+					delay = float(last_line.split('/')[3])
+					ping_result.append({'host': host, 'delay': delay})
+
+		ping_result = sorted(ping_result, key=lambda x: x['delay'])
+		with open(ping_result_file, 'w', encoding='utf-8') as f:
+			json.dump(ping_result, f, ensure_ascii=False, indent=4)
+
+		print(f'Ping test done! Results saved to {ping_result_file}')    
                 
     def geoip_update(self, url):
         print('Downloading Country.mmdb...')
