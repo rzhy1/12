@@ -134,17 +134,14 @@ class SubMerge:
         with open(yaml_p, 'r', encoding='utf-8') as f:
             yaml_content = f.read()
             lines = yaml_content.split('\n')
-        
+    
         def ping_node(n):
             if isinstance(n, dict) and (n.get('type') == 'ss' or n.get('type') == 'vmess' or n.get('type') == 'vless'):
-                ping_result = subprocess.run(['ping', '-c', '4', '-W', '1', '-s', '32', n.get('server')], capture_output=True, text=True)
-                if ping_result.returncode == 0:
-                    # 进行速度测试
-                    speedPingTestUrl = 'https://www.YouTube.com/generate_204'  # 速度测试的URL
-                    speed_result = subprocess.run(['curl', '-o', '/dev/null', '-s', '-w', '%{speed_download}', speedPingTestUrl], capture_output=True, text=True)
-                    if speed_result.returncode == 0:
-                        n['speed'] = float(speed_result.stdout)
-                        return n
+                speedPingTestUrl = 'https://www.YouTube.com/generate_204'
+                speed_result = subprocess.run(['curl', '-o', '/dev/null', '-s', '-w', '%{speed_download}', speedPingTestUrl], capture_output=True, text=True)
+                if speed_result.returncode == 0:
+                    n['speed'] = float(speed_result.stdout)
+                    return n
 
         ping_nodes = []
         max_workers = 100  # 指定线程数
@@ -155,8 +152,7 @@ class SubMerge:
                     ping_nodes.append(result)
 
         if ping_nodes:
-            # 根据速度进行排序
-            ping_nodes.sort(key=lambda x: x['speed'])
+            ping_nodes.sort(key=lambda x: x['speed'])  # 根据速度进行排序
 
             with open(ping_file, 'w', encoding='utf-8') as f:
                 f.write(yaml.dump(ping_nodes))
