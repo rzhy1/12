@@ -138,10 +138,13 @@ class SubMerge:
 
             try:
                 node = yaml.safe_load(line)
-                if node.get('type') == 'ss' or node.get('type') == 'vmess':
-                    ping_result = subprocess.run(['ping', '-c', '4', '-W', '1', '-s', '32', node.get('server')], capture_output=True, text=True)
-                    if ping_result.returncode == 0:
-                        ping_nodes.append(node)
+                if isinstance(node, list):  # 检查节点是否为列表
+                    for n in node:
+                        if isinstance(n, dict):  # 检查节点是否为字典
+                            if n.get('type') == 'ss' or n.get('type') == 'vmess':  # 获取节点类型
+                                ping_result = subprocess.run(['ping', '-c', '4', '-W', '1', '-s', '32', n.get('server')], capture_output=True, text=True)
+                                if ping_result.returncode == 0:
+                                    ping_nodes.append(n)
             except yaml.YAMLError:
                 pass  # 跳过解析错误的行
 
