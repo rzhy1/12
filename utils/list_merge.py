@@ -135,7 +135,7 @@ class SubMerge:
             lines = yaml_content.split('\n')
         
         def ping_node(n):
-            if n.get('type') == 'ss' or n.get('type') == 'vmess':
+            if isinstance(n, dict) and (n.get('type') == 'ss' or n.get('type') == 'vmess' or n.get('type') == 'vless'):
                 ping_result = subprocess.run(['ping', '-c', '4', '-W', '1', '-s', '32', n.get('server')], capture_output=True, text=True)
                 if ping_result.returncode == 0:
                     return n
