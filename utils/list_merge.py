@@ -130,13 +130,20 @@ class SubMerge:
 
         with open(yaml_p, 'r', encoding='utf-8') as f:
             yaml_content = f.read()
-            nodes = yaml.safe_load(yaml_content)
+            lines = yaml_content.split('\n')
         
-        for node in nodes:
-            if node.get('type') == 'ss' or node.get('type') == 'vmess':
-                ping_result = subprocess.run(['ping', '-c', '4', '-W', '1', '-s', '32', node.get('server')], capture_output=True, text=True)
-                if ping_result.returncode == 0:
-                    ping_nodes.append(node)
+        for line in lines:
+            if '%' in line:  # 跳过包含无法识别字符的行
+                continue
+
+            try:
+                node = yaml.safe_load(line)
+                if node.get('type') == 'ss' or node.get('type') == 'vmess':
+                    ping_result = subprocess.run(['ping', '-c', '4', '-W', '1', '-s', '32', node.get('server')], capture_output=True, text=True)
+                    if ping_result.returncode == 0:
+                        ping_nodes.append(node)
+            except yaml.YAMLError:
+                pass  # 跳过解析错误的行
 
         if ping_nodes:
             with open(ping_file, 'w', encoding='utf-8') as f:
