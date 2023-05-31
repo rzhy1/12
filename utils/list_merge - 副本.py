@@ -18,8 +18,7 @@ import concurrent.futures
 # 文件路径定义
 Eterniy = './Eternity'
 readme = './README.md'
-
-sub_list_json = './sub/sub_list.json'
+sub_list_json = 'sub_list.json'
 sub_merge_path = './sub/'
 sub_list_path = './sub/list/'
 yaml_p = '{}/sub_merge_yaml.yaml'.format(sub_merge_path)
@@ -136,10 +135,6 @@ class SubMerge:
             lines = yaml_content.split('\n')
     
         def ping_node(n):
-            server = n.get('server')
-            if server is None:
-                return None
-                
             ping_result = subprocess.run(['ping', '-c', '4', '-W', '1', '-s', '32', n.get('server')], capture_output=True, text=True)
             if ping_result.returncode == 0:
                 speedPingTestUrl = 'https://www.YouTube.com/generate_204'
