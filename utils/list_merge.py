@@ -134,6 +134,7 @@ class SubMerge:
         with open(yaml_p, 'r', encoding='utf-8') as f:
             yaml_content = f.read()
             lines = yaml_content.split('\n')
+        url_list = [yaml.safe_load(line) for line in lines if '%' not in line]
     
         def ping_node(n):
             server = n.get('server')
@@ -151,7 +152,7 @@ class SubMerge:
         ping_nodes = []
         max_workers = 100  # 指定线程数
         with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
-            results = executor.map(ping_node, (yaml.safe_load(line) for line in lines if '%' not in line))
+            results = executor.map(ping_node, url_list)
             for result in results:
                 if result:
                     ping_nodes.append(result)
