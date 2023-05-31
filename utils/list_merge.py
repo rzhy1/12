@@ -141,7 +141,8 @@ class SubMerge:
             if server is None:
                 return None
                 
-            ping_result = subprocess.run(['ping', '-c', '4', '-W', '1', '-s', '32', n.get('server')], capture_output=True, text=True)
+            ping_result = subprocess.run(['ping', '-c', '4', '-W', '1', '-s', '32', n], capture_output=True, text=True)
+
             if ping_result.returncode == 0:
                 speedPingTestUrl = 'https://www.YouTube.com/generate_204'
                 speed_result = subprocess.run(['curl', '-o', '/dev/null', '-s', '-w', '%{speed_download}', speedPingTestUrl], capture_output=True, text=True)
