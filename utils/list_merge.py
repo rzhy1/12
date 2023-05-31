@@ -137,7 +137,7 @@ class SubMerge:
         url_list = [yaml.safe_load(line) for line in lines if '%' not in line]
     
         def ping_node(n):
-            server = n.get('server')
+            server = n
             if server is None:
                 return None
                 
