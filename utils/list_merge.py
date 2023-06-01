@@ -120,8 +120,10 @@ class SubMerge:
             f.write(data)
 
     def test_proxy_availability(self, proxy):
-        url = f"{proxy['type']}://{proxy['server']}:{proxy['port']}"
         try:
+            config = VmessConfig.from_subscription(proxy)
+            url = f"{config.network}://{config.add}:{config.port}"
+
             response = requests.get(url, timeout=5)
             if response.status_code == 200:
                 print(f"Proxy {proxy['name']} is available")
