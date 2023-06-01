@@ -132,7 +132,7 @@ class SubMerge:
 
     def test_node_availability(self):
         print("Testing node availability...")
-        with open('yaml_p', 'r') as f:
+        with open(yaml_p, 'r') as f:
             yaml_data = yaml.safe_load(f)
 
         proxies = yaml_data.get('proxies', [])
