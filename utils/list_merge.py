@@ -120,49 +120,39 @@ class SubMerge:
             f.write(data)
 
     def test_proxy_availability(self, proxy):
-        proxy_name = proxy.get('name', '')
-        proxy_server = proxy.get('server', '')
-        proxy_port = proxy.get('port', '')
-        proxy_type = proxy.get('type', '')
-        
-        if proxy_type == 'vmess':
-            proxy_address = f'{proxy_server}:{proxy_port}'
-            try:
-                response = requests.get('https://www.google.com', proxies={'http': proxy_address, 'https': proxy_address}, timeout=5)
-                if response.status_code == 200:
-                    print(f'Proxy {proxy_name} is available.')
-            except requests.exceptions.RequestException:
-                print(f'Proxy {proxy_name} is not available.')
+        url = f"{proxy['type']}://{proxy['server']}:{proxy['port']}"
+        try:
+            response = requests.get(url, timeout=5)
+            if response.status_code == 200:
+                print(f"Proxy {proxy['name']} is available")
+                with open('available_proxies.txt', 'a') as f:
+                    f.write(f"{proxy}\n")
+        except Exception as e:
+            print(f"Proxy {proxy['name']} is not available: {e}")
 
     def test_node_availability(self):
-        with open(yaml_p, 'r', encoding='utf-8') as f:
-            yaml_content = yaml.safe_load(f)
-        
-        proxies = yaml_content.get('proxies', [])
-        
-        available_proxies = []
+        print("Testing node availability...")
+        with open('sub_merge_yaml.yaml', 'r') as f:
+            yaml_data = yaml.safe_load(f)
+
+        proxies = yaml_data.get('proxies', [])
         threads = []
         max_threads = 100
-        
+
         for proxy in proxies:
             thread = threading.Thread(target=self.test_proxy_availability, args=(proxy,))
             threads.append(thread)
             thread.start()
-    
-            # 控制线程数不超过 max_threads
+
             if len(threads) >= max_threads:
                 for thread in threads:
                     thread.join()
                 threads = []
 
-        # 等待剩余的线程执行完毕
         for thread in threads:
             thread.join()
 
-        with open('./sub/available_proxies.yaml', 'w', encoding='utf-8') as f:
-            yaml.dump({'proxies': available_proxies}, f)
-        
-        print('Testing node availability completed.')
+        print("Node availability testing completed.")
 
 
 if __name__ == '__main__':
