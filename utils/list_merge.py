@@ -8,7 +8,7 @@ import requests
 import subprocess
 import concurrent.futures
 
-
+from typing import List
 from list_update import UpdateUrl
 from sub_convert import SubConvert
 from cv2box.utils import os_call
@@ -136,12 +136,14 @@ class SubMerge:
             lines = yaml_content.split('\n')
         url_list = [yaml.safe_load(line) for line in lines if '%' not in line]
     
-        def ping_node(n):
-            server = n['server']
-            if server is None:
-                return None
-                
-            ping_result = subprocess.run(['ping', '-c', '4', '-W', '1', '-s', '32', server], capture_output=True, text=True)
+        def ping_node(nodes: List[dict]):
+            for n in nodes:
+                server = n['server']
+                try:
+                    ping_output = subprocess.check_output(['ping', '-c', '4', server]).decode('utf-8')
+                    print(ping_output)
+                except subprocess.CalledProcessError as e:
+                    print(f'Ping failed for {server}: {e}')
 
             if ping_result.returncode == 0:
                 speedPingTestUrl = 'https://www.YouTube.com/generate_204'
