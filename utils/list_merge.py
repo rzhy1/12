@@ -129,31 +129,31 @@ class SubMerge:
         except Exception:
             return None
 
-    def filter_available_nodes(nodes):
-        available_nodes = []
-        for node in nodes:
-            latency = test_latency(node)
-            if latency is not None:
-                node['latency'] = latency
-                available_nodes.append(node)
-        return available_nodes
+        def filter_available_nodes(nodes):
+            available_nodes = []
+            for node in nodes:
+                latency = test_latency(node)
+                if latency is not None:
+                    node['latency'] = latency
+                    available_nodes.append(node)
+            return available_nodes
 
-    def save_nodes_to_file(nodes, file_path):
-        with open(file_path, 'w') as f:
-            yaml.dump(nodes, f, allow_unicode=True)
+        def save_nodes_to_file(nodes, file_path):
+            with open(file_path, 'w'', encoding='utf-8') as f:
+                yaml.dump(nodes, f, allow_unicode=True)
 
-    # 从sub_merge_yaml.yaml文件加载节点
-    with open(yaml_p, 'r', encoding='utf-8') as f:
-        nodes = yaml.safe_load(f)
+        # 从sub_merge_yaml.yaml文件加载节点
+        with open(yaml_p, 'r', encoding='utf-8') as f:
+            nodes = yaml.safe_load(f)
 
-    # 过滤并测试可用节点的延迟
-    available_nodes = filter_available_nodes(nodes['proxies'])
+        # 过滤并测试可用节点的延迟
+        available_nodes = filter_available_nodes(nodes['proxies'])
 
-    # 根据延迟对可用节点进行排序
-    available_nodes.sort(key=lambda x: x['latency'])
+        # 根据延迟对可用节点进行排序
+        available_nodes.sort(key=lambda x: x['latency'])
 
-    # 将可用节点保存到新文件中
-    save_nodes_to_file(available_nodes, 'available_nodes.yaml')
+        # 将可用节点保存到新文件中
+        save_nodes_to_file(available_nodes, 'available_nodes.yaml')
 
 
 
