@@ -5,6 +5,7 @@ import os
 import re
 import yaml
 import requests
+import threading
 
 from list_update import UpdateUrl
 from sub_convert import SubConvert
@@ -27,10 +28,11 @@ def content_write(file, output_type):
     file.write(output_type)
     file.close()
 
+
 class SubMerge:
     def __init__(self):
         self.sc = SubConvert()
-        
+
     def read_list(self, json_file, split=False):  # 将 sub_list.json Url 内容读取为列表
         with open(json_file, 'r', encoding='utf-8') as f:
             raw_list = json.load(f)
@@ -44,7 +46,7 @@ class SubMerge:
                 raw_list[index]['url'] = urls
                 input_list.append(raw_list[index])
         return input_list
-        
+
     def sub_merge(self, url_list):
         content_list = []
         os_call('rm -f ./sub/list/*')
@@ -53,7 +55,8 @@ class SubMerge:
             url, ids, remarks = url_info['url'], url_info['id'], url_info['remarks']
             content = self.sc.convert_remote(url, output_type='url', host='http://127.0.0.1:25500')
             if content.startswith('Url 解析错误'):
-                content = self.sc.main(self.read_list(sub_list_json)[index]['url'], input_type='url', output_type='url')
+                content = self.sc.main(self.read_list(sub_list_json)[index]['url'], input_type='url',
+                                       output_type='url')
                 if content.startswith('Url 解析错误'):
                     error_msg = 'Url 解析错误'
                     print(f'Writing error of {remarks} to {ids:0>2d}.txt')
@@ -72,40 +75,18 @@ class SubMerge:
 
             with open(f'{sub_list_path}{ids:0>2d}.txt', 'w+', encoding='utf-8') as f:
                 f.write(error_msg if 'error_msg' in locals() else content)
- 
+
         print('Merging nodes...\n')
         content_raw = ''.join(content_list)
+
         def merge(content):
             return self.sc.main(content, 'content', 'YAML', {'dup_rm_enabled': True, 'format_name_enabled': True})
+
         with concurrent.futures.ThreadPoolExecutor() as executor:
             content_yaml = list(executor.map(merge, [content_raw]))[0]
         content_write(yaml_p, content_yaml)
         print(f'Done!')
-        
-    def test_node_availability(self, yaml_p):
-        with open(yaml_p, 'r', encoding='utf-8') as f:
-            yaml_content = yaml.safe_load(f)
 
-        available_nodes = []
-        for node in yaml_content['proxies']:
-            name = node['name']
-            server = node['server']
-            port = node['port']
-            url = f"http://{server}:{port}/generate_204"
-            try:
-                response = requests.get(url)
-                if response.status_code == 204:
-                    available_nodes.append(node)
-                    print(f"Node '{name}' is available.")
-                else:
-                    print(f"Node '{name}' is not available. Status code: {response.status_code}")
-            except requests.exceptions.RequestException as e:
-                print(f"Failed to connect to node '{name}'. Error: {e}")
-
-        with open('./sub/available_nodes.yaml', 'w', encoding='utf-8') as f:
-            yaml.dump({'proxies': available_nodes}, f)
-        print("Available nodes saved to 'available_nodes.yaml'.")
-                
     def geoip_update(self, url):
         print('Downloading Country.mmdb...')
         try:
@@ -131,12 +112,57 @@ class SubMerge:
                     top_amount = len(proxies) - 1
                 lines.insert(index + 1, f'合并节点总数: `{top_amount}`\n')
                 break
-        
+
         # 写入 README 内容
         with open(readme_file, 'w', encoding='utf-8') as f:
             data = ''.join(lines)
             print('完成!\n')
             f.write(data)
+
+    def test_proxy_availability(self, proxy):
+        proxy_name = proxy.get('name', '')
+        proxy_server = proxy.get('server', '')
+        proxy_port = proxy.get('port', '')
+        proxy_type = proxy.get('type', '')
+        
+        if proxy_type == 'vmess':
+            proxy_address = f'{proxy_server}:{proxy_port}'
+            try:
+                response = requests.get('https://www.google.com', proxies={'http': proxy_address, 'https': proxy_address}, timeout=5)
+                if response.status_code == 200:
+                    print(f'Proxy {proxy_name} is available.')
+            except requests.exceptions.RequestException:
+                print(f'Proxy {proxy_name} is not available.')
+
+    def test_node_availability(self):
+        with open(yaml_p, 'r', encoding='utf-8') as f:
+            yaml_content = yaml.safe_load(f)
+        
+        proxies = yaml_content.get('proxies', [])
+        
+        available_proxies = []
+        threads = []
+        max_threads = 100
+        
+        for proxy in proxies:
+            thread = threading.Thread(target=self.test_proxy_availability, args=(proxy,))
+            threads.append(thread)
+            thread.start()
+    
+            # 控制线程数不超过 max_threads
+            if len(threads) >= max_threads:
+                for thread in threads:
+                    thread.join()
+                threads = []
+
+        # 等待剩余的线程执行完毕
+        for thread in threads:
+            thread.join()
+
+        with open('./sub/available_proxies.yaml', 'w', encoding='utf-8') as f:
+            yaml.dump({'proxies': available_proxies}, f)
+        
+        print('Testing node availability completed.')
 
 
 if __name__ == '__main__':
@@ -145,4 +171,4 @@ if __name__ == '__main__':
     sub_list_remote = sm.read_list(sub_list_json, split=True)
     sm.sub_merge(sub_list_remote)
     sm.readme_update(readme, sub_list_remote)
-    sm.test_node_availability(yaml_p)
+    sm.test_node_availability()

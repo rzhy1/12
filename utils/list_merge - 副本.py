@@ -5,9 +5,7 @@ import os
 import re
 import yaml
 import requests
-import subprocess
-import concurrent.futures
-
+import threading
 
 from list_update import UpdateUrl
 from sub_convert import SubConvert
@@ -18,7 +16,8 @@ import concurrent.futures
 # 文件路径定义
 Eterniy = './Eternity'
 readme = './README.md'
-sub_list_json = 'sub_list.json'
+
+sub_list_json = './sub/sub_list.json'
 sub_merge_path = './sub/'
 sub_list_path = './sub/list/'
 yaml_p = '{}/sub_merge_yaml.yaml'.format(sub_merge_path)
@@ -54,15 +53,10 @@ class SubMerge:
 
         for index, url_info in enumerate(url_list):
             url, ids, remarks = url_info['url'], url_info['id'], url_info['remarks']
-            
-            # 跳过 Trojan 节点
-            if 'trojan://' in url:
-                print(f'Skipping Trojan node: {remarks}')
-                continue
-                
             content = self.sc.convert_remote(url, output_type='url', host='http://127.0.0.1:25500')
             if content.startswith('Url 解析错误'):
-                content = self.sc.main(self.read_list(sub_list_json)[index]['url'], input_type='url', output_type='url')
+                content = self.sc.main(self.read_list(sub_list_json)[index]['url'], input_type='url',
+                                       output_type='url')
                 if content.startswith('Url 解析错误'):
                     error_msg = 'Url 解析错误'
                     print(f'Writing error of {remarks} to {ids:0>2d}.txt')
@@ -125,40 +119,50 @@ class SubMerge:
             print('完成!\n')
             f.write(data)
 
-    def ping_test(self):
-        print('开始进行Ping测试...\n')
-        ping_file = './ping_result.txt'
-        ping_nodes = []
+    def test_proxy_availability(self, proxy):
+        proxy_name = proxy.get('name', '')
+        proxy_server = proxy.get('server', '')
+        proxy_port = proxy.get('port', '')
+        proxy_type = proxy.get('type', '')
+        
+        if proxy_type == 'vmess':
+            proxy_address = f'{proxy_server}:{proxy_port}'
+            try:
+                response = requests.get('https://www.google.com', proxies={'http': proxy_address, 'https': proxy_address}, timeout=5)
+                if response.status_code == 200:
+                    print(f'Proxy {proxy_name} is available.')
+            except requests.exceptions.RequestException:
+                print(f'Proxy {proxy_name} is not available.')
 
+    def test_node_availability(self):
         with open(yaml_p, 'r', encoding='utf-8') as f:
-            yaml_content = f.read()
-            lines = yaml_content.split('\n')
+            yaml_content = yaml.safe_load(f)
+        
+        proxies = yaml_content.get('proxies', [])
+        
+        available_proxies = []
+        threads = []
+        max_threads = 100
+        
+        for proxy in proxies:
+            thread = threading.Thread(target=self.test_proxy_availability, args=(proxy,))
+            threads.append(thread)
+            thread.start()
     
-        def ping_node(n):
-            ping_result = subprocess.run(['ping', '-c', '4', '-W', '1', '-s', '32', n.get('server')], capture_output=True, text=True)
-            if ping_result.returncode == 0:
-                speedPingTestUrl = 'https://www.YouTube.com/generate_204'
-                speed_result = subprocess.run(['curl', '-o', '/dev/null', '-s', '-w', '%{speed_download}', speedPingTestUrl], capture_output=True, text=True)
-                if speed_result.returncode == 0:
-                    n['speed'] = float(speed_result.stdout)
-                    return n
+            # 控制线程数不超过 max_threads
+            if len(threads) >= max_threads:
+                for thread in threads:
+                    thread.join()
+                threads = []
 
-        ping_nodes = []
-        max_workers = 100  # 指定线程数
-        with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
-            results = executor.map(ping_node, (yaml.safe_load(line) for line in lines if '%' not in line))
-            for result in results:
-                if result:
-                    ping_nodes.append(result)
+        # 等待剩余的线程执行完毕
+        for thread in threads:
+            thread.join()
 
-        if ping_nodes:
-            ping_nodes.sort(key=lambda x: x['speed'])  # 根据速度进行排序
-
-            with open(ping_file, 'w', encoding='utf-8') as f:
-                f.write(yaml.dump(ping_nodes))
-            print(f'已将Ping通的节点保存至 {ping_file}\n')
-        else:
-            print('没有Ping通的节点\n')
+        with open('./sub/available_proxies.yaml', 'w', encoding='utf-8') as f:
+            yaml.dump({'proxies': available_proxies}, f)
+        
+        print('Testing node availability completed.')
 
 
 if __name__ == '__main__':
@@ -167,5 +171,4 @@ if __name__ == '__main__':
     sub_list_remote = sm.read_list(sub_list_json, split=True)
     sm.sub_merge(sub_list_remote)
     sm.readme_update(readme, sub_list_remote)
-    sm.ping_test()
-
+    sm.test_node_availability()
