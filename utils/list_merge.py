@@ -30,7 +30,7 @@ class SubMerge:
     def __init__(self):
         self.sc = SubConvert()
 
-    def read_list(self, json_file, split=False):  # 将 sub_list.json Url 内容读取为列表
+    def read_list(self, json_file, split=False):
         with open(json_file, 'r', encoding='utf-8') as f:
             raw_list = json.load(f)
         input_list = []
@@ -50,14 +50,8 @@ class SubMerge:
 
         for index, url_info in enumerate(url_list):
             url, ids, remarks = url_info['url'], url_info['id'], url_info['remarks']
-            
-            # 添加测试节点可用性的功能
-            is_available = self.test_node_availability(url)
-            if not is_available:
-                print(f'节点 {remarks} 不可用')
-                continue
-
-            content = self.sc.convert_remote(url, output_type='url', host='http://127.0.0.1:25500')
+            content = self.sc.convert_remote(
+                url, output_type='url', host='http://127.0.0.1:25500')
             if content.startswith('Url 解析错误'):
                 content = self.sc.main(self.read_list(sub_list_json)[index]['url'], input_type='url',
                                        output_type='url')
@@ -89,7 +83,29 @@ class SubMerge:
         with concurrent.futures.ThreadPoolExecutor() as executor:
             content_yaml = list(executor.map(merge, [content_raw]))[0]
         content_write(yaml_p, content_yaml)
+
+        # 测试可用性并输出可用节点到文件
+        available_nodes = self.test_node_availability(url_list)
+        with open('./sub/available_nodes.json', 'w', encoding='utf-8') as f:
+            json.dump(available_nodes, f, ensure_ascii=False, indent=2)
+
         print(f'Done!')
+
+    def test_node_availability(self, url_list):
+        available_nodes = []
+        for url_info in url_list:
+            url, ids, remarks = url_info['url'], url_info['id'], url_info['remarks']
+            try:
+                response = requests.get(url, timeout=5)
+                if response.status_code == 200:
+                    available_nodes.append(url_info)
+                    print(f'Node {remarks} is available')
+                else:
+                    print(f'Node {remarks} is not available')
+            except Exception as e:
+                print(f'Error occurred while testing node {remarks}: {str(e)}')
+
+        return available_nodes
 
     def geoip_update(self, url):
         print('Downloading Country.mmdb...')
@@ -100,7 +116,7 @@ class SubMerge:
         except Exception:
             print('Failed!\n')
 
-    def readme_update(self, readme_file='./README.md', sub_list=[]):  # 更新 README 节点信息
+    def readme_update(self, readme_file='./README.md', sub_list=[]):
         print('更新 README.md 中')
         with open(readme_file, 'r', encoding='utf-8') as f:
             lines = f.readlines()
@@ -122,16 +138,6 @@ class SubMerge:
             data = ''.join(lines)
             print('完成!\n')
             f.write(data)
-
-    def test_node_availability(self, url):
-        try:
-            response = requests.get(url)
-            if response.status_code == 204:
-                return True
-            else:
-                return False
-        except requests.exceptions.RequestException:
-            return False
 
 
 if __name__ == '__main__':
