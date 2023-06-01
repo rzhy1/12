@@ -137,11 +137,11 @@ class SubMerge:
         url_list = [yaml.safe_load(line) for line in lines if '%' not in line]
     
         def ping_node(n):
-            server = n
+            server = n['server']
             if server is None:
                 return None
                 
-            ping_result = subprocess.run(['ping', '-c', '4', '-W', '1', '-s', '32', n], capture_output=True, text=True)
+            ping_result = subprocess.run(['ping', '-c', '4', '-W', '1', '-s', '32', server], capture_output=True, text=True)
 
             if ping_result.returncode == 0:
                 speedPingTestUrl = 'https://www.YouTube.com/generate_204'
