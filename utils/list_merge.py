@@ -5,6 +5,8 @@ import os
 import re
 import yaml
 import requests
+import subprocess
+import speedtest
 
 from list_update import UpdateUrl
 from sub_convert import SubConvert
@@ -27,10 +29,11 @@ def content_write(file, output_type):
     file.write(output_type)
     file.close()
 
+
 class SubMerge:
     def __init__(self):
         self.sc = SubConvert()
-        
+
     def read_list(self, json_file, split=False):  # 将 sub_list.json Url 内容读取为列表
         with open(json_file, 'r', encoding='utf-8') as f:
             raw_list = json.load(f)
@@ -44,7 +47,7 @@ class SubMerge:
                 raw_list[index]['url'] = urls
                 input_list.append(raw_list[index])
         return input_list
-        
+
     def sub_merge(self, url_list):
         content_list = []
         os_call('rm -f ./sub/list/*')
@@ -72,59 +75,18 @@ class SubMerge:
 
             with open(f'{sub_list_path}{ids:0>2d}.txt', 'w+', encoding='utf-8') as f:
                 f.write(error_msg if 'error_msg' in locals() else content)
- 
+
         print('Merging nodes...\n')
         content_raw = ''.join(content_list)
+
         def merge(content):
             return self.sc.main(content, 'content', 'YAML', {'dup_rm_enabled': True, 'format_name_enabled': True})
+
         with concurrent.futures.ThreadPoolExecutor() as executor:
             content_yaml = list(executor.map(merge, [content_raw]))[0]
         content_write(yaml_p, content_yaml)
         print(f'Done!')
 
-        # Test latency of nodes
-        print('Testing node latency...\n')
-        for url_info in url_list:
-            url, ids, remarks = url_info['url'], url_info['id'], url_info['remarks']
-            try:
-                start_time = time.time()
-                requests.get(url, timeout=10)
-                latency = time.time() - start_time
-                url_info['latency'] = latency
-                print(f'Latency of {remarks}: {latency:.2f}s')
-            except Exception:
-                url_info['latency'] = float('inf')
-                print(f'Failed to test latency of {remarks}')
-        print('\n')
-
-        # Sort nodes by latency
-        url_list.sort(key=lambda x: x['latency'])
-
-        # Test speed of nodes
-        print('Testing node speed...\n')
-        for url_info in url_list:
-            url, ids, remarks = url_info['url'], url_info['id'], url_info['remarks']
-            try:
-                start_time = time.time()
-                requests.get(url, timeout=10)
-                speed = len(requests.content) / (time.time() - start_time) / 1024 / 1024
-                url_info['speed'] = speed
-                print(f'Speed of {remarks}: {speed:.2f}MB/s')
-            except Exception:
-                url_info['speed'] = -1
-                print(f'Failed to test speed of {remarks}')
-        print('\n')
-
-        # Sort nodes by speed
-        url_list.sort(key=lambda x: x['speed'], reverse=True)
-
-        # Write sorted nodes to file
-        with open('sorted_nodes.txt', 'w') as f:
-            for url_info in url_list:
-                url, ids, remarks = url_info['url'], url_info['id'], url_info['remarks']
-                f.write(f'{remarks}: {url}, latency={url_info["latency"]:.2f}s, speed={url_info["speed"]:.2f}MB/s\n')
-        
-                
     def geoip_update(self, url):
         print('Downloading Country.mmdb...')
         try:
@@ -150,12 +112,59 @@ class SubMerge:
                     top_amount = len(proxies) - 1
                 lines.insert(index + 1, f'合并节点总数: `{top_amount}`\n')
                 break
-        
+
         # 写入 README 内容
         with open(readme_file, 'w', encoding='utf-8') as f:
             data = ''.join(lines)
             print('完成!\n')
             f.write(data)
+
+    def test_node_latency(self, url_list):
+        print('Testing node latency...\n')
+        for index, url_info in enumerate(url_list):
+            url, ids, remarks = url_info['url'], url_info['id'], url_info['remarks']
+            try:
+                response = requests.get(url, timeout=10)
+                if response.ok:
+                    print(f'Latency test for node {remarks} [{ids:0>2d}]: {response.elapsed.total_seconds()}s')
+                else:
+                    print(f'Latency test failed for node {remarks} [{ids:0>2d}]')
+            except requests.exceptions.RequestException:
+                print(f'Latency test failed for node {remarks} [{ids:0>2d}]')
+
+    def test_node_speed(self, url_list):
+        print('Testing node speed...\n')
+        for index, url_info in enumerate(url_list):
+            url, ids, remarks = url_info['url'], url_info['id'], url_info['remarks']
+            try:
+                st = speedtest.Speedtest()
+                server = st.get_best_server()
+                download_speed = st.download() / 1024 / 1024  # Convert to Mbps
+                upload_speed = st.upload() / 1024 / 1024  # Convert to Mbps
+                print(f'Speed test for node {remarks} [{ids:0>2d}]: Download: {download_speed:.2f} Mbps, Upload: {upload_speed:.2f} Mbps')
+            except speedtest.SpeedtestException:
+                print(f'Speed test failed for node {remarks} [{ids:0>2d}]')
+
+    def sort_nodes_by_speed(self, url_list):
+        def get_node_speed(url_info):
+            try:
+                st = speedtest.Speedtest()
+                st.get_best_server()
+                download_speed = st.download() / 1024 / 1024  # Convert to Mbps
+                return download_speed
+            except speedtest.SpeedtestException:
+                return 0
+
+        url_list.sort(key=get_node_speed, reverse=True)
+        return url_list
+
+    def merge_and_test_nodes(self):
+        url_list = self.read_list(sub_list_json)
+        sorted_url_list = self.sort_nodes_by_speed(url_list)
+        self.test_node_latency(sorted_url_list)
+        available_url_list = [url for url in sorted_url_list if self.test_node_speed([url])]
+        self.sub_merge(available_url_list)
+        self.readme_update(readme, available_url_list)
 
 
 if __name__ == '__main__':
@@ -164,3 +173,4 @@ if __name__ == '__main__':
     sub_list_remote = sm.read_list(sub_list_json, split=True)
     sm.sub_merge(sub_list_remote)
     sm.readme_update(readme, sub_list_remote)
+    sm.merge_and_test_nodes()
