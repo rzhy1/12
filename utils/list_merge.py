@@ -83,21 +83,15 @@ class SubMerge:
         with concurrent.futures.ThreadPoolExecutor() as executor:
             content_yaml = list(executor.map(merge, [content_raw]))[0]
         content_write(yaml_p, content_yaml)
-
-        # 测试可用性并输出可用节点到文件
-        available_nodes = self.test_node_availability(url_list)
-        with open('./sub/available_nodes.json', 'w', encoding='utf-8') as f:
-            json.dump(available_nodes, f, ensure_ascii=False, indent=2)
-
         print(f'Done!')
 
-    def test_node_availability(self, url_list):
+    def test_node_availability(self, url_list, test_url):
         available_nodes = []
         for url_info in url_list:
             url, ids, remarks = url_info['url'], url_info['id'], url_info['remarks']
             try:
-                response = requests.get(url, timeout=5)
-                if response.status_code == 200:
+                response = requests.get(test_url, timeout=5)
+                if response.status_code == 204:
                     available_nodes.append(url_info)
                     print(f'Node {remarks} is available')
                 else:
@@ -117,15 +111,15 @@ class SubMerge:
             print('Failed!\n')
 
     def readme_update(self, readme_file='./README.md', sub_list=[]):
-        print('更新 README.md 中')
+        print('Updating README.md...')
         with open(readme_file, 'r', encoding='utf-8') as f:
             lines = f.readlines()
             f.close()
 
         # 所有节点打印
         for index in range(len(lines)):
-            if lines[index] == '## 所有节点\n':  # 目标行内容
-                lines.pop(index + 1)  # 删除节点数量
+            if lines[index] == '## 所有节点\n':
+                lines.pop(index + 1)
                 with open('./sub/sub_merge_yaml.yaml', 'r', encoding='utf-8') as f:
                     proxies = f.read()
                     proxies = proxies.split('\n- ')
@@ -136,7 +130,7 @@ class SubMerge:
         # 写入 README 内容
         with open(readme_file, 'w', encoding='utf-8') as f:
             data = ''.join(lines)
-            print('完成!\n')
+            print('Done!\n')
             f.write(data)
 
 
@@ -146,3 +140,9 @@ if __name__ == '__main__':
     sub_list_remote = sm.read_list(sub_list_json, split=True)
     sm.sub_merge(sub_list_remote)
     sm.readme_update(readme, sub_list_remote)
+
+    # 测试节点可用性
+    test_url = 'https://www.YouTube.com/generate_204'
+    available_nodes = sm.test_node_availability(sub_list_remote, test_url)
+    with open('./sub/available_nodes.json', 'w', encoding='utf-8') as f:
+        json.dump(available_nodes, f, ensure_ascii=False, indent=2)
