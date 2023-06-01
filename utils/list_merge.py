@@ -5,8 +5,6 @@ import os
 import re
 import yaml
 import requests
-import subprocess
-import speedtest
 
 from list_update import UpdateUrl
 from sub_convert import SubConvert
@@ -29,11 +27,10 @@ def content_write(file, output_type):
     file.write(output_type)
     file.close()
 
-
 class SubMerge:
     def __init__(self):
         self.sc = SubConvert()
-
+        
     def read_list(self, json_file, split=False):  # 将 sub_list.json Url 内容读取为列表
         with open(json_file, 'r', encoding='utf-8') as f:
             raw_list = json.load(f)
@@ -47,7 +44,7 @@ class SubMerge:
                 raw_list[index]['url'] = urls
                 input_list.append(raw_list[index])
         return input_list
-
+        
     def sub_merge(self, url_list):
         content_list = []
         os_call('rm -f ./sub/list/*')
@@ -75,18 +72,40 @@ class SubMerge:
 
             with open(f'{sub_list_path}{ids:0>2d}.txt', 'w+', encoding='utf-8') as f:
                 f.write(error_msg if 'error_msg' in locals() else content)
-
+ 
         print('Merging nodes...\n')
         content_raw = ''.join(content_list)
-
         def merge(content):
             return self.sc.main(content, 'content', 'YAML', {'dup_rm_enabled': True, 'format_name_enabled': True})
-
         with concurrent.futures.ThreadPoolExecutor() as executor:
             content_yaml = list(executor.map(merge, [content_raw]))[0]
         content_write(yaml_p, content_yaml)
         print(f'Done!')
+        
+    def test_node_availability(self, yaml_p):
+        with open(yaml_p, 'r', encoding='utf-8') as f:
+            yaml_content = yaml.safe_load(f)
 
+        available_nodes = []
+        for node in yaml_content['proxies']:
+            name = node['name']
+            server = node['server']
+            port = node['port']
+            url = f"http://{server}:{port}/generate_204"
+            try:
+                response = requests.get(url)
+                if response.status_code == 204:
+                    available_nodes.append(node)
+                    print(f"Node '{name}' is available.")
+                else:
+                    print(f"Node '{name}' is not available. Status code: {response.status_code}")
+            except requests.exceptions.RequestException as e:
+                print(f"Failed to connect to node '{name}'. Error: {e}")
+
+        with open('./sub/available_nodes.yaml', 'w', encoding='utf-8') as f:
+            yaml.dump({'proxies': available_nodes}, f)
+        print("Available nodes saved to 'available_nodes.yaml'.")
+                
     def geoip_update(self, url):
         print('Downloading Country.mmdb...')
         try:
@@ -112,49 +131,12 @@ class SubMerge:
                     top_amount = len(proxies) - 1
                 lines.insert(index + 1, f'合并节点总数: `{top_amount}`\n')
                 break
-
+        
         # 写入 README 内容
         with open(readme_file, 'w', encoding='utf-8') as f:
             data = ''.join(lines)
             print('完成!\n')
             f.write(data)
-
-
-    def test_latency(node):
-        try:
-            server = speedtest.Speedtest()
-            server.get_servers([node['server']])
-            latency = server.results.ping
-            return latency
-        except Exception:
-            return None
-
-        def filter_available_nodes(nodes):
-            available_nodes = []
-            for node in nodes:
-                latency = test_latency(node)
-                if latency is not None:
-                    node['latency'] = latency
-                    available_nodes.append(node)
-            return available_nodes
-
-        def save_nodes_to_file(nodes, file_path):
-            with open(file_path, 'w'', encoding='utf-8') as f:
-                yaml.dump(nodes, f, allow_unicode=True)
-
-        # 从sub_merge_yaml.yaml文件加载节点
-        with open(yaml_p, 'r', encoding='utf-8') as f:
-            nodes = yaml.safe_load(f)
-
-        # 过滤并测试可用节点的延迟
-        available_nodes = filter_available_nodes(nodes['proxies'])
-
-        # 根据延迟对可用节点进行排序
-        available_nodes.sort(key=lambda x: x['latency'])
-
-        # 将可用节点保存到新文件中
-        save_nodes_to_file(available_nodes, 'available_nodes.yaml')
-
 
 
 if __name__ == '__main__':
@@ -163,4 +145,4 @@ if __name__ == '__main__':
     sub_list_remote = sm.read_list(sub_list_json, split=True)
     sm.sub_merge(sub_list_remote)
     sm.readme_update(readme, sub_list_remote)
- 
+    sm.test_node_availability(yaml_p)
