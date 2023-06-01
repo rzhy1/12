@@ -1,14 +1,9 @@
-#!/usr/bin/env python3
-
 import json
 import os
 import re
 import yaml
 import requests
-import subprocess
-import concurrent.futures
 
-from typing import List
 from list_update import UpdateUrl
 from sub_convert import SubConvert
 from cv2box.utils import os_call
@@ -56,14 +51,16 @@ class SubMerge:
         for index, url_info in enumerate(url_list):
             url, ids, remarks = url_info['url'], url_info['id'], url_info['remarks']
             
-            # 跳过 Trojan 节点
-            if 'trojan://' in url:
-                print(f'Skipping Trojan node: {remarks}')
+            # 添加测试节点可用性的功能
+            is_available = self.test_node_availability(url)
+            if not is_available:
+                print(f'节点 {remarks} 不可用')
                 continue
-                
+
             content = self.sc.convert_remote(url, output_type='url', host='http://127.0.0.1:25500')
             if content.startswith('Url 解析错误'):
-                content = self.sc.main(self.read_list(sub_list_json)[index]['url'], input_type='url', output_type='url')
+                content = self.sc.main(self.read_list(sub_list_json)[index]['url'], input_type='url',
+                                       output_type='url')
                 if content.startswith('Url 解析错误'):
                     error_msg = 'Url 解析错误'
                     print(f'Writing error of {remarks} to {ids:0>2d}.txt')
@@ -126,48 +123,15 @@ class SubMerge:
             print('完成!\n')
             f.write(data)
 
-    def ping_test(self):
-        print('开始进行Ping测试...\n')
-        ping_file = './ping_result.txt'
-        ping_nodes = []
-
-        with open(yaml_p, 'r', encoding='utf-8') as f:
-            yaml_content = f.read()
-            lines = yaml_content.split('\n')
-        url_list = [yaml.safe_load(line) for line in lines if '%' not in line]
-    
-        def ping_node(nodes: List[dict]):
-            for n in nodes:
-                server = n['server']
-                try:
-                    ping_output = subprocess.check_output(['ping', '-c', '4', server]).decode('utf-8')
-                    print(ping_output)
-                except subprocess.CalledProcessError as e:
-                    print(f'Ping failed for {server}: {e}')
-
-            if ping_result.returncode == 0:
-                speedPingTestUrl = 'https://www.YouTube.com/generate_204'
-                speed_result = subprocess.run(['curl', '-o', '/dev/null', '-s', '-w', '%{speed_download}', speedPingTestUrl], capture_output=True, text=True)
-                if speed_result.returncode == 0:
-                    n['speed'] = float(speed_result.stdout)
-                    return n
-
-        ping_nodes = []
-        max_workers = 100  # 指定线程数
-        with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
-            results = executor.map(ping_node, url_list)
-            for result in results:
-                if result:
-                    ping_nodes.append(result)
-
-        if ping_nodes:
-            ping_nodes.sort(key=lambda x: x['speed'])  # 根据速度进行排序
-
-            with open(ping_file, 'w', encoding='utf-8') as f:
-                f.write(yaml.dump(ping_nodes))
-            print(f'已将Ping通的节点保存至 {ping_file}\n')
-        else:
-            print('没有Ping通的节点\n')
+    def test_node_availability(self, url):
+        try:
+            response = requests.get(url)
+            if response.status_code == 204:
+                return True
+            else:
+                return False
+        except requests.exceptions.RequestException:
+            return False
 
 
 if __name__ == '__main__':
@@ -176,5 +140,3 @@ if __name__ == '__main__':
     sub_list_remote = sm.read_list(sub_list_json, split=True)
     sm.sub_merge(sub_list_remote)
     sm.readme_update(readme, sub_list_remote)
-    sm.ping_test()
-
