@@ -12,8 +12,7 @@ from sub_convert import SubConvert
 from cv2box.utils import os_call
 from urllib import request
 import concurrent.futures
-from vmess import VmessConfig
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urlencode
 
 # 文件路径定义
 Eterniy = './Eternity'
