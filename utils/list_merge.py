@@ -12,6 +12,8 @@ from sub_convert import SubConvert
 from cv2box.utils import os_call
 from urllib import request
 import concurrent.futures
+from vmess import VmessConfig
+from urllib.parse import urlparse
 
 # 文件路径定义
 Eterniy = './Eternity'
@@ -121,11 +123,40 @@ class SubMerge:
 
     def test_proxy_availability(self, proxy):
         try:
-            config = VmessConfig.from_subscription(proxy)
-            url = f"{config.network}://{config.add}:{config.port}"
+            url = "https://www.google.com/generate_204"
+            parsed_url = urlparse(url)
+            ws_path = proxy.get('ws-path', '/')
+            proxy_url = f"{parsed_url.scheme}://{proxy['server']}:{proxy['port']}{ws_path}"
+            
+            headers = {
+                'Host': parsed_url.netloc,
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.182 Safari/537.36',
+            }
 
-            response = requests.get(url, timeout=5)
-            if response.status_code == 200:
+            if proxy['type'] == 'vmess':
+                vmess_config = {
+                    'v': '2',
+                    'ps': proxy['name'],
+                    'add': proxy['server'],
+                    'port': str(proxy['port']),
+                    'id': proxy['uuid'],
+                    'aid': str(proxy['alterId']),
+                    'net': proxy.get('network', 'tcp'),
+                    'type': proxy.get('cipher', 'auto'),
+                    'sni': proxy.get('ws-headers', {}).get('Host', parsed_url.netloc),
+                    'path': ws_path,
+                    'tls': 'tls' in proxy and proxy['tls'],
+                }
+                proxy_url = f"{proxy_url}/?{urlencode(vmess_config)}"
+                proxies = {
+                    'http': proxy_url,
+                    'https': proxy_url
+                }
+                response = requests.get(url, headers=headers, proxies=proxies, timeout=5)
+            else:
+                response = requests.get(url, headers=headers, timeout=5)
+            
+            if response.status_code == 204:
                 print(f"Proxy {proxy['name']} is available")
                 with open('available_proxies.txt', 'a') as f:
                     f.write(f"{proxy}\n")
