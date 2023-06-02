@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import json
 import os
 import re
@@ -12,10 +10,10 @@ from sub_convert import SubConvert
 from cv2box.utils import os_call
 from urllib import request
 import concurrent.futures
-from urllib.parse import urlparse, urlencode
+import subprocess
 
 # 文件路径定义
-Eterniy = './Eternity'
+Eternity = './Eternity'
 readme = './README.md'
 
 sub_list_json = './sub/sub_list.json'
@@ -29,12 +27,22 @@ def content_write(file, output_type):
     file.write(output_type)
     file.close()
 
+class TestProxyThread(threading.Thread):
+    def __init__(self, proxy_addr, result):
+        threading.Thread.__init__(self)
+        self.proxy_addr = proxy_addr
+        self.result = result
+
+    def run(self):
+        latency = self.test_proxy(self.proxy_addr)
+        if latency:
+            self.result.append(latency)
 
 class SubMerge:
     def __init__(self):
         self.sc = SubConvert()
 
-    def read_list(self, json_file, split=False):  # 将 sub_list.json Url 内容读取为列表
+    def read_list(self, json_file, split=False):
         with open(json_file, 'r', encoding='utf-8') as f:
             raw_list = json.load(f)
         input_list = []
@@ -56,8 +64,7 @@ class SubMerge:
             url, ids, remarks = url_info['url'], url_info['id'], url_info['remarks']
             content = self.sc.convert_remote(url, output_type='url', host='http://127.0.0.1:25500')
             if content.startswith('Url 解析错误'):
-                content = self.sc.main(self.read_list(sub_list_json)[index]['url'], input_type='url',
-                                       output_type='url')
+                content = self.sc.main(self.read_list(sub_list_json)[index]['url'], input_type='url', output_type='url')
                 if content.startswith('Url 解析错误'):
                     error_msg = 'Url 解析错误'
                     print(f'Writing error of {remarks} to {ids:0>2d}.txt')
@@ -97,16 +104,15 @@ class SubMerge:
         except Exception:
             print('Failed!\n')
 
-    def readme_update(self, readme_file='./README.md', sub_list=[]):  # 更新 README 节点信息
+    def readme_update(self, readme_file='./README.md', sub_list=[]):
         print('更新 README.md 中')
         with open(readme_file, 'r', encoding='utf-8') as f:
             lines = f.readlines()
             f.close()
 
-        # 所有节点打印
         for index in range(len(lines)):
-            if lines[index] == '## 所有节点\n':  # 目标行内容
-                lines.pop(index + 1)  # 删除节点数量
+            if lines[index] == '## 所有节点\n':
+                lines.pop(index + 1)
                 with open('./sub/sub_merge_yaml.yaml', 'r', encoding='utf-8') as f:
                     proxies = f.read()
                     proxies = proxies.split('\n- ')
@@ -114,77 +120,59 @@ class SubMerge:
                 lines.insert(index + 1, f'合并节点总数: `{top_amount}`\n')
                 break
 
-        # 写入 README 内容
         with open(readme_file, 'w', encoding='utf-8') as f:
             data = ''.join(lines)
             print('完成!\n')
             f.write(data)
 
-    def test_proxy_availability(self, proxy):
+    def test_proxy(self, proxy):
+        proxy_info = proxy.split('\n')
+        proxy_server = proxy_info[1].split(':')
+        proxy_address = proxy_server[0]
+        proxy_port = proxy_server[1]
+
         try:
-            url = "https://www.google.com/generate_204"
-            parsed_url = urlparse(url)
-            ws_path = proxy.get('ws-path', '/')
-            proxy_url = f"{parsed_url.scheme}://{proxy['server']}:{proxy['port']}{ws_path}"
-            
-            headers = {
-                'Host': parsed_url.netloc,
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.182 Safari/537.36',
-            }
+            response = subprocess.check_output(
+                f"ping -c 3 -W 2 {proxy_address}", stderr=subprocess.STDOUT, shell=True
+            )
+            response = response.decode('utf-8')
+            avg_time = re.findall(r"min/avg/max/mdev = (.+?)\/", response)
+            if len(avg_time) > 0:
+                avg_time = avg_time[0]
+                return avg_time
+        except subprocess.CalledProcessError:
+            return None
 
-            if proxy['type'] == 'vmess':
-                vmess_config = {
-                    'v': '2',
-                    'ps': proxy['name'],
-                    'add': proxy['server'],
-                    'port': str(proxy['port']),
-                    'id': proxy['uuid'],
-                    'aid': str(proxy['alterId']),
-                    'net': proxy.get('network', 'tcp'),
-                    'type': proxy.get('cipher', 'auto'),
-                    'sni': proxy.get('ws-headers', {}).get('Host', parsed_url.netloc),
-                    'path': ws_path,
-                    'tls': 'tls' in proxy and proxy['tls'],
-                }
-                proxy_url = f"{proxy_url}/?{urlencode(vmess_config)}"
-                proxies = {
-                    'http': proxy_url,
-                    'https': proxy_url
-                }
-                response = requests.get(url, headers=headers, proxies=proxies, timeout=5)
-            else:
-                response = requests.get(url, headers=headers, timeout=5)
-            
-            if response.status_code == 204:
-                print(f"Proxy {proxy['name']} is available")
-                with open('available_proxies.txt', 'a') as f:
-                    f.write(f"{proxy}\n")
-        except Exception as e:
-            print(f"Proxy {proxy['name']} is not available: {e}")
+    def test_all_proxies(self):
+        with open(yaml_p, 'r', encoding='utf-8') as f:
+            proxies = yaml.load(f, Loader=yaml.FullLoader)
 
-    def test_node_availability(self):
-        print("Testing node availability...")
-        with open(yaml_p, 'r') as f:
-            yaml_data = yaml.safe_load(f)
-
-        proxies = yaml_data.get('proxies', [])
+        available_proxies = []
         threads = []
-        max_threads = 100
+        lock = threading.Lock()
 
-        for proxy in proxies:
-            thread = threading.Thread(target=self.test_proxy_availability, args=(proxy,))
+        def append_result(latency):
+            lock.acquire()
+            available_proxies.append(latency)
+            lock.release()
+
+        for proxy in proxies['proxies']:
+            proxy_name = proxy['name']
+            proxy_server = proxy['server']
+            proxy_port = proxy['port']
+            proxy_type = proxy['type']
+            proxy_uuid = proxy['uuid']
+            proxy_addr = f"{proxy_name}\n{proxy_server}:{proxy_port}\n{proxy_type}\n{proxy_uuid}"
+            thread = TestProxyThread(proxy_addr, available_proxies)
             threads.append(thread)
             thread.start()
-
-            if len(threads) >= max_threads:
-                for thread in threads:
-                    thread.join()
-                threads = []
 
         for thread in threads:
             thread.join()
 
-        print("Node availability testing completed.")
+        with open('./sub/available_proxies.txt', 'w', encoding='utf-8') as f:
+            for latency in available_proxies:
+                f.write(f"{latency['name']}: {latency['latency']} ms\n")
 
 
 if __name__ == '__main__':
@@ -193,4 +181,4 @@ if __name__ == '__main__':
     sub_list_remote = sm.read_list(sub_list_json, split=True)
     sm.sub_merge(sub_list_remote)
     sm.readme_update(readme, sub_list_remote)
-    sm.test_node_availability()
+    sm.test_all_proxies()
