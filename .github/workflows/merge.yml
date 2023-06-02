@@ -34,7 +34,7 @@ jobs:
     - name: 安装 v2ray
       run: |
         # 在此处添加安装 v2ray 的命令，例如：
-        wget https://github.com/v2ray/v2ray-core/releases/latest/download/v2ray-linux-64.zip
+        wget https://github.com/v2fly/v2ray-core/releases/download/v4.31.0/v2ray-linux-64.zip
         unzip v2ray-linux-64.zip
         chmod +x v2ray
         
