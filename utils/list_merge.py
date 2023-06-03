@@ -1,13 +1,16 @@
-import concurrent.futures
+#!/usr/bin/env python3
+
 import json
 import os
 import re
+import yaml
 import requests
-from urllib import request
 
 from list_update import UpdateUrl
 from sub_convert import SubConvert
 from cv2box.utils import os_call
+from urllib import request
+import concurrent.futures
 
 # 文件路径定义
 Eterniy = './Eternity'
@@ -29,7 +32,7 @@ class SubMerge:
     def __init__(self):
         self.sc = SubConvert()
 
-    def read_list(self, json_file, split=False):
+    def read_list(self, json_file, split=False):  # 将 sub_list.json Url 内容读取为列表
         with open(json_file, 'r', encoding='utf-8') as f:
             raw_list = json.load(f)
         input_list = []
@@ -43,25 +46,6 @@ class SubMerge:
                 input_list.append(raw_list[index])
         return input_list
 
-    def test_node_latency(self, url):
-        try:
-            response = requests.get(url, timeout=5)
-            if response.status_code == 200:
-                return url
-        except requests.exceptions.RequestException:
-            pass
-
-        return None
-
-    def test_and_save_nodes(self, urls, output_file):
-        with concurrent.futures.ThreadPoolExecutor(max_workers=100) as executor:
-            results = list(executor.map(self.test_node_latency, urls))
-
-        available_nodes = [url for url in results if url is not None]
-        with open(output_file, 'w', encoding='utf-8') as f:
-            for url in available_nodes:
-                f.write(url + '\n')
-
     def sub_merge(self, url_list):
         content_list = []
         os_call('rm -f ./sub/list/*')
@@ -70,7 +54,8 @@ class SubMerge:
             url, ids, remarks = url_info['url'], url_info['id'], url_info['remarks']
             content = self.sc.convert_remote(url, output_type='url', host='http://127.0.0.1:25500')
             if content.startswith('Url 解析错误'):
-                content = self.sc.main(self.read_list(sub_list_json)[index]['url'], input_type='url', output_type='url')
+                content = self.sc.main(self.read_list(sub_list_json)[index]['url'], input_type='url',
+                                       output_type='url')
                 if content.startswith('Url 解析错误'):
                     error_msg = 'Url 解析错误'
                     print(f'Writing error of {remarks} to {ids:0>2d}.txt')
@@ -110,15 +95,17 @@ class SubMerge:
         except Exception:
             print('Failed!\n')
 
-    def readme_update(self, readme_file='./README.md', sub_list=[]):
+    def readme_update(self, readme_file='./README.md',
+                      sub_list=[]):  # 更新 README 节点信息
         print('更新 README.md 中')
         with open(readme_file, 'r', encoding='utf-8') as f:
             lines = f.readlines()
             f.close()
 
+        # 所有节点打印
         for index in range(len(lines)):
-            if lines[index] == '## 所有节点\n':
-                lines.pop(index + 1)
+            if lines[index] == '## 所有节点\n':  # 目标行内容
+                lines.pop(index + 1)  # 删除节点数量
                 with open('./sub/sub_merge_yaml.yaml', 'r', encoding='utf-8') as f:
                     proxies = f.read()
                     proxies = proxies.split('\n- ')
@@ -126,18 +113,47 @@ class SubMerge:
                 lines.insert(index + 1, f'合并节点总数: `{top_amount}`\n')
                 break
 
+        # 写入 README 内容
         with open(readme_file, 'w', encoding='utf-8') as f:
             data = ''.join(lines)
             print('完成!\n')
             f.write(data)
 
 
+def test_latency(url):
+    try:
+        response = requests.get(url, timeout=10)
+        if response.status_code == 200:
+            return True
+    except:
+        return False
+
+
 if __name__ == '__main__':
     UpdateUrl().update_main()
     sm = SubMerge()
     sub_list_remote = sm.read_list(sub_list_json, split=True)
-    urls = [url_info['url'] for url_info in sub_list_remote]
-    output_file = './available_nodes.txt'
-    sm.test_and_save_nodes(urls, output_file)
     sm.sub_merge(sub_list_remote)
     sm.readme_update(readme, sub_list_remote)
+
+    with open(yaml_p, 'r', encoding='utf-8') as f:
+        yaml_content = yaml.safe_load(f)
+        f.close()
+
+    urls = []
+    for item in yaml_content:
+        if 'url' in item and item['url'] != "":
+            urls.append(item['url'])
+
+    available_urls = []
+    with concurrent.futures.ThreadPoolExecutor(max_workers=100) as executor:
+        futures = [executor.submit(test_latency, url) for url in urls]
+        for future, url in zip(futures, urls):
+            if future.result():
+                available_urls.append(url)
+
+    with open('./available_urls.txt', 'w', encoding='utf-8') as f:
+        for url in available_urls:
+            f.write(url + '\n')
+
+    print('Testing complete! Available URLs saved in available_urls.txt.')
