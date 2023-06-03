@@ -54,8 +54,7 @@ class SubMerge:
             url, ids, remarks = url_info['url'], url_info['id'], url_info['remarks']
             content = self.sc.convert_remote(url, output_type='url', host='http://127.0.0.1:25500')
             if content.startswith('Url 解析错误'):
-                content = self.sc.main(self.read_list(sub_list_json)[index]['url'], input_type='url',
-                                       output_type='url')
+                content = self.sc.main(self.read_list(sub_list_json)[index]['url'], input_type='url', output_type='url')
                 if content.startswith('Url 解析错误'):
                     error_msg = 'Url 解析错误'
                     print(f'Writing error of {remarks} to {ids:0>2d}.txt')
@@ -77,10 +76,8 @@ class SubMerge:
 
         print('Merging nodes...\n')
         content_raw = ''.join(content_list)
-
         def merge(content):
             return self.sc.main(content, 'content', 'YAML', {'dup_rm_enabled': True, 'format_name_enabled': True})
-
         with concurrent.futures.ThreadPoolExecutor() as executor:
             content_yaml = list(executor.map(merge, [content_raw]))[0]
         content_write(yaml_p, content_yaml)
@@ -95,8 +92,7 @@ class SubMerge:
         except Exception:
             print('Failed!\n')
 
-    def readme_update(self, readme_file='./README.md',
-                      sub_list=[]):  # 更新 README 节点信息
+    def readme_update(self, readme_file='./README.md', sub_list=[]):  # 更新 README 节点信息
         print('更新 README.md 中')
         with open(readme_file, 'r', encoding='utf-8') as f:
             lines = f.readlines()
@@ -119,14 +115,22 @@ class SubMerge:
             print('完成!\n')
             f.write(data)
 
+    def test_connection(self, url):
+        try:
+            response = requests.get(url, timeout=10)
+            if response.status_code == 200:
+                return url
+        except:
+            return None
 
-def test_latency(url):
-    try:
-        response = requests.get(url, timeout=10)
-        if response.status_code == 200:
-            return True
-    except:
-        return False
+    def test_node_connections(self, urls):
+        available_nodes = []
+        with concurrent.futures.ThreadPoolExecutor(max_workers=100) as executor:
+            results = executor.map(self.test_connection, urls)
+            for result in results:
+                if result:
+                    available_nodes.append(result)
+        return available_nodes
 
 
 if __name__ == '__main__':
@@ -136,24 +140,11 @@ if __name__ == '__main__':
     sm.sub_merge(sub_list_remote)
     sm.readme_update(readme, sub_list_remote)
 
-    with open(yaml_p, 'r', encoding='utf-8') as f:
-        yaml_content = yaml.safe_load(f)
-        f.close()
-
-    urls = []
-    for item in yaml_content:
-        if 'url' in item and item['url'] != "":
-            urls.append(item['url'])
-
-    available_urls = []
-    with concurrent.futures.ThreadPoolExecutor(max_workers=100) as executor:
-        futures = [executor.submit(test_latency, url) for url in urls]
-        for future, url in zip(futures, urls):
-            if future.result():
-                available_urls.append(url)
-
-    with open('./available_urls.txt', 'w', encoding='utf-8') as f:
-        for url in available_urls:
-            f.write(url + '\n')
-
-    print('Testing complete! Available URLs saved in available_urls.txt.')
+    print('Testing node connections...\n')
+    urls = [url['url'] for url in sub_list_remote]
+    available_nodes = sm.test_node_connections(urls)
+    available_nodes_file = './available_nodes.txt'
+    with open(available_nodes_file, 'w+', encoding='utf-8') as f:
+        for node in available_nodes:
+            f.write(node + '\n')
+    print(f'Available nodes written to {available_nodes_file}')
