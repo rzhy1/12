@@ -88,7 +88,7 @@ class SubMerge:
         content_write(yaml_p, content_yaml)
         print(f'Done!')
 
-    def test_proxy_latency(proxy):
+    def test_proxy_latency(self, proxy):
         try:
             if proxy["type"] == "vmess":
                 test_url = f"http://{proxy['server']}:{proxy['port']}/test?param=value"
@@ -104,20 +104,20 @@ class SubMerge:
         except requests.exceptions.RequestException as e:
             print(f"Error testing proxy: {str(e)}")
 
-    def test_and_save_proxy(proxy):
-        test_proxy_latency(proxy)
+    def test_and_save_proxy(self, proxy):
+        self.test_proxy_latency(proxy)
         return proxy
 
-    def test_and_save_proxies(proxies):
+    def test_and_save_proxies(self, proxies):
         available_proxies = []
         with concurrent.futures.ThreadPoolExecutor(max_workers=100) as executor:
-            future_to_proxy = {executor.submit(test_and_save_proxy, proxy): proxy for proxy in proxies}
+            future_to_proxy = {executor.submit(self.test_and_save_proxy, proxy): proxy for proxy in proxies}
             for future in concurrent.futures.as_completed(future_to_proxy):
                 result = future.result()
                 available_proxies.append(result)
         return available_proxies
 
-    def save_proxies_to_file(proxies, filename):
+    def save_proxies_to_file(self, proxies, filename):
         with open(filename, "w") as file:
             yaml.dump(proxies, file)
 
@@ -155,16 +155,17 @@ class SubMerge:
 
 
 if __name__ == '__main__':
+    sm = SubMerge()
+
     with open(yaml_p, 'r', encoding='utf-8') as file:
         data = yaml.safe_load(file)
         proxies = data.get("proxies", [])
 
-    available_proxies = test_and_save_proxies(proxies)
-    save_proxies_to_file(available_proxies, "available_proxies.yaml")
-    
+    available_proxies = sm.test_and_save_proxies(proxies)
+    sm.save_proxies_to_file(available_proxies, "available_proxies.yaml")
+
     UpdateUrl().update_main()
-    sm = SubMerge()
+
     sub_list_remote = sm.read_list(sub_list_json, split=True)
     sm.sub_merge(sub_list_remote)
     sm.readme_update(readme, sub_list_remote)
-    sm.test_all_proxies()
