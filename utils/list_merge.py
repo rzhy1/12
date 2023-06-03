@@ -92,7 +92,7 @@ class SubMerge:
         try:
             if proxy["type"] == "vmess":
                 test_url = f"http://{proxy['server']}:{proxy['port']}/test?param=value"
-                response = requests.get(test_url, timeout=5)
+                response = requests.get(test_url, timeout=15)
                 latency = response.elapsed.total_seconds()
                 proxy["latency"] = latency
             elif proxy["type"] == "ss":
