@@ -3,6 +3,7 @@ import os
 import re
 import yaml
 import requests
+import threading
 
 from list_update import UpdateUrl
 from sub_convert import SubConvert
@@ -87,66 +88,38 @@ class SubMerge:
         content_write(yaml_p, content_yaml)
         print(f'Done!')
 
-    def test_proxy(self, proxy_info):
-        proxy_type = proxy_info.get('type')
-        if proxy_type == 'vmess':
-            return self.test_vmess_proxy(proxy_info)
-        elif proxy_type == 'ss':
-            return self.test_ss_proxy(proxy_info)
-        elif proxy_type == 'trojan':
-            return self.test_trojan_proxy(proxy_info)
-        else:
-            print(f"Unsupported proxy type: {proxy_type}")
-            return None
-
-    def test_vmess_proxy(self, proxy_info):
+    def test_proxy_latency(proxy):
         try:
-            cmd = [
-                "v2ray",
-                "-format=json",
-                "-config=-",
-                "test"
-            ]
-            config = {
-                "inbounds": [],
-                "outbounds": [proxy_info]
-            }
-            config_str = json.dumps(config)
-            proc = subprocess.run(cmd, input=config_str, capture_output=True, text=True)
-            output = proc.stdout.strip()
-            if output == "ok":
-                return proxy_info
-            else:
-                return None
-        except Exception as e:
-            print(f"Error testing vmess proxy: {str(e)}")
-            return None
+            if proxy["type"] == "vmess":
+                test_url = f"http://{proxy['server']}:{proxy['port']}/test?param=value"
+                response = requests.get(test_url)
+                latency = response.elapsed.total_seconds()
+                proxy["latency"] = latency
+            elif proxy["type"] == "ss":
+                # Implement SS latency test logic
+                pass
+            elif proxy["type"] == "vless":
+                # Implement VLESS latency test logic
+                pass
+        except requests.exceptions.RequestException as e:
+            print(f"Error testing proxy: {str(e)}")
 
-    def test_ss_proxy(self, proxy_info):
-        # Implement your SS proxy testing logic here
-        pass
+    def test_and_save_proxy(proxy):
+        test_proxy_latency(proxy)
+        return proxy
 
-    def test_trojan_proxy(self, proxy_info):
-        # Implement your Trojan proxy testing logic here
-        pass
-
-    def test_all_proxies(self):
+    def test_and_save_proxies(proxies):
         available_proxies = []
-        with open(yaml_p, 'r', encoding='utf-8') as f:
-            yaml_data = yaml.safe_load(f)
-            proxies = yaml_data.get('proxies', [])
+        with concurrent.futures.ThreadPoolExecutor(max_workers=100) as executor:
+            future_to_proxy = {executor.submit(test_and_save_proxy, proxy): proxy for proxy in proxies}
+            for future in concurrent.futures.as_completed(future_to_proxy):
+                result = future.result()
+                available_proxies.append(result)
+        return available_proxies
 
-            with concurrent.futures.ThreadPoolExecutor(max_workers=100) as executor:
-                results = list(executor.map(self.test_proxy, proxies))
-
-            for result in results:
-                if result is not None:
-                    available_proxies.append(result)
-
-        # 将可用的代理信息保存到文件
-        with open(available_proxies_path, 'w', encoding='utf-8') as f:
-            for proxy_info in available_proxies:
-                f.write(f"{json.dumps(proxy_info)}\n")
+    def save_proxies_to_file(proxies, filename):
+        with open(filename, "w") as file:
+            yaml.dump(proxies, file)
 
     def geoip_update(self, url):
         print('Downloading Country.mmdb...')
@@ -182,6 +155,13 @@ class SubMerge:
 
 
 if __name__ == '__main__':
+    with open(yaml_p, 'r', encoding='utf-8') as file:
+        data = yaml.safe_load(file)
+        proxies = data.get("proxies", [])
+
+    available_proxies = test_and_save_proxies(proxies)
+    save_proxies_to_file(available_proxies, "available_proxies.yaml")
+    
     UpdateUrl().update_main()
     sm = SubMerge()
     sub_list_remote = sm.read_list(sub_list_json, split=True)
