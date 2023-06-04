@@ -35,6 +35,12 @@ for proxy in proxies:
     thread = threading.Thread(target=test_latency, args=(proxy,))
     thread.start()
     threads.append(thread)
+    
+    # 控制线程数为100
+    if len(threads) >= 100:
+        for thread in threads:
+            thread.join()
+        threads.clear()
 
 # 等待所有线程执行完成
 for thread in threads:
