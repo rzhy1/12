@@ -79,10 +79,10 @@ class SubMerge:
         content_raw = ''.join(content_list)
 
         def merge(content):
-            return self.sc.main(content, 'content', 'YAML', {'dup_rm_enabled': True, 'format_name_enabled': True})
+            return self.sc.main(content, 'content', 'YAML',
+                                {'dup_rm_enabled': True, 'format_name_enabled': True})
 
-        with concurrent.futures.ThreadPoolExecutor() as executor:
-            content_yaml = list(executor.map(merge, [content_raw]))[0]
+        content_yaml = merge(content_raw)
         content_write(yaml_p, content_yaml)
         print(f'Done!')
 
@@ -121,7 +121,7 @@ class SubMerge:
 
 def test_node_latency(node):
     url = node['url']
-    response = requests.get(url, timeout=10)
+    response = requests.get(url, timeout=5)
     if response.status_code == 200:
         return node
     return None
@@ -136,15 +136,21 @@ if __name__ == '__main__':
 
     print('Testing node latency...\n')
 
+    with open(yaml_p, 'r', encoding='utf-8') as f:
+        content_yaml = f.read()
+        content_yaml = yaml.safe_load(content_yaml)
+        nodes = content_yaml['proxies']
+
     available_nodes = []
     with concurrent.futures.ThreadPoolExecutor(max_workers=100) as executor:
-        futures = [executor.submit(test_node_latency, node) for node in sub_list_remote]
+        futures = [executor.submit(test_node_latency, node) for node in nodes]
         for future in concurrent.futures.as_completed(futures):
             node = future.result()
             if node:
                 available_nodes.append(node)
 
-    available_nodes_file = './sub/available_nodes.json'
+    available_nodes_yaml = {'proxies': available_nodes}
+    available_nodes_file = './sub/available_nodes.yaml'
     with open(available_nodes_file, 'w', encoding='utf-8') as f:
-        json.dump(available_nodes, f, indent=2)
+        yaml.dump(available_nodes_yaml, f, allow_unicode=True)
     print(f'Available nodes stored in {available_nodes_file}')
