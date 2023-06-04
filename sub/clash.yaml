@@ -1,157 +1,46 @@
-proxies:
-- alterId: 0
-  cipher: auto
-  name: "\U0001F1FA\U0001F1F8US-15.204.31.63-0146"
-  network: ws
-  port: 80
-  server: 15.204.31.63
-  skip-cert-verify: true
-  tls: false
-  type: vmess
-  uuid: ab4a729f-e4d4-4a78-8c24-3107c5e4faee
-  ws-headers:
-    Host: 15.204.31.63
-  ws-path: /
-- alterId: 0
-  cipher: auto
-  name: "\U0001F3C1RELAY-104.26.12.63-0138"
-  network: ws
-  port: 2086
-  server: RACKNERD.COM
-  skip-cert-verify: true
-  tls: false
-  type: vmess
-  uuid: c2a55def-e91e-4132-c504-0f276c4c3a1e
-  ws-headers:
-    Host: RACKNERD.COM
-  ws-path: /aries
-- alterId: 0
-  cipher: auto
-  name: "\U0001F1E8\U0001F1FFCZ-46.8.8.100-0155"
-  network: ws
-  port: 80
-  server: euserv17p.ezddns.tk
-  skip-cert-verify: true
-  tls: false
-  type: vmess
-  uuid: 4a6cc4a6-491f-4a58-fb45-bf888f0b381f
-  ws-headers:
-    Host: euserv17p.ezddns.tk
-  ws-path: /video
-- alterId: 0
-  cipher: auto
-  name: "\U0001F1E8\U0001F1FFCZ-46.8.8.100-0113"
-  network: ws
-  port: 80
-  server: euserv18p.ezddns.tk
-  skip-cert-verify: true
-  tls: false
-  type: vmess
-  uuid: 344c0b7d-2c35-4c95-8481-e2fc3c456a06
-  ws-headers:
-    Host: euserv18p.ezddns.tk
-  ws-path: /audio.mp3
-- alterId: 0
-  cipher: auto
-  name: "\U0001F1E8\U0001F1FFCZ-46.8.8.100-0119"
-  network: ws
-  port: 80
-  server: euserv12p.ezddns.tk
-  skip-cert-verify: true
-  tls: false
-  type: vmess
-  uuid: c0304bc1-f8ff-4108-9bc6-3415d16ae5e3
-  ws-headers:
-    Host: euserv12p.ezddns.tk
-  ws-path: /video
-- alterId: 0
-  cipher: auto
-  name: "\U0001F1E8\U0001F1FFCZ-46.8.8.100-0112"
-  network: ws
-  port: 80
-  server: euserv10p.ezddns.tk
-  skip-cert-verify: true
-  tls: false
-  type: vmess
-  uuid: 4323a38e-29dc-4c6d-f436-b15114e57a75
-  ws-headers:
-    Host: euserv10p.ezddns.tk
-  ws-path: /download.zip
-- alterId: 0
-  cipher: auto
-  name: "\U0001F1E8\U0001F1FFCZ-46.8.8.100-0107"
-  network: ws
-  port: 80
-  server: euserv11p.ezddns.tk
-  skip-cert-verify: true
-  tls: false
-  type: vmess
-  uuid: ffab7ea6-596d-4f88-daa5-4ec177f314a5
-  ws-headers:
-    Host: euserv11p.ezddns.tk
-  ws-path: /download.rar
-- alterId: 0
-  cipher: auto
-  name: "\U0001F1E8\U0001F1FFCZ-46.8.8.100-0136"
-  network: ws
-  port: 80
-  server: euserv7p.ezddns.tk
-  skip-cert-verify: true
-  tls: false
-  type: vmess
-  uuid: 0b5aeb7c-e477-484f-8999-61772c43b43c
-  ws-headers:
-    Host: euserv7p.ezddns.tk
-  ws-path: /audio.wav
-- alterId: 0
-  cipher: auto
-  name: "\U0001F1E8\U0001F1FFCZ-46.8.8.100-0167"
-  network: ws
-  port: 80
-  server: euserv9p.ezddns.tk
-  skip-cert-verify: true
-  tls: false
-  type: vmess
-  uuid: ca870483-fa7d-4f64-983a-6ed455143aca
-  ws-headers:
-    Host: euserv9p.ezddns.tk
-  ws-path: /live
-- alterId: 0
-  cipher: auto
-  name: "\U0001F3C1RELAY-23.227.38.33-1074"
-  network: ws
-  port: 80
-  server: shopify.com
-  skip-cert-verify: true
-  tls: false
-  type: vmess
-  uuid: 353bbf5f-a264-4731-e735-984e611c2e01
-  ws-headers:
-    Host: tgus.cloudflare.quest
-  ws-path: /
-- cipher: aes-128-gcm
-  name: "\U0001F1FA\U0001F1F8US-216.52.183.243-1427"
-  password: 83XvX4Vo%*3a
-  port: 80/?plugin=obfs%3Bobfs
-  server: 216.52.183.243
-  type: ss
-- cipher: aes-256-cfb
-  name: "\U0001F1EB\U0001F1F7FR-15.237.118.254-1423"
-  obfs: tls1.2_ticket_auth
-  obfsparam: null
-  password: RcfVcDzzB
-  port: 8181
-  protocol: origin
-  protoparam: null
-  server: fr-am1-5.eqsunshine.com
-  type: ssr
-- cipher: aes-256-cfb
-  name: "\U0001F1EF\U0001F1F5JP-3.112.178.243-1448"
-  obfs: tls1.2_ticket_auth
-  obfsparam: null
-  password: eAokbaDN6
-  port: 8081
-  protocol: origin
-  protoparam: null
-  server: jp-am48-6.eqnode.net
-  type: ssr
+allow-lan: false
+external-controller: 127.0.0.1:9090
+log-level: info
+mixed-port: 7788
+mode: rule
+port: 7890
+proxies: null
+proxy-groups:
+- name: "\u8282\u70B9\u9009\u62E9"
+  proxies:
+  - "\u81EA\u52A8\u9009\u62E9"
+  - "\u8D1F\u8F7D\u5747\u8861"
+  - "\u5931\u8D25\u5207\u6362"
+  - DIRECT
+  type: select
+- interval: 60
+  lazy: true
+  name: "\u81EA\u52A8\u9009\u62E9"
+  proxies: null
+  tolerance: 500
+  type: url-test
+  url: https://github.com/explore
+- interval: 300
+  name: "\u8D1F\u8F7D\u5747\u8861"
+  proxies: null
+  strategy: consistent-hashing
+  tolerance: 200
+  type: load-balance
+  url: https://github.com/explore
+- interval: 300
+  name: "\u5931\u8D25\u5207\u6362"
+  proxies: null
+  tolerance: 200
+  type: fallback
+  url: https://github.com/explore
+rule-providers:
+  Reject:
+    behavior: domain
+    interval: 86400
+    path: ./ruleset/TopFreeProxies/reject.yaml
+    type: http
+    url: https://fastly.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/reject.txt
+rules:
+- RULE-SET,Reject,REJECT,no-resolve
+- "MATCH,\u8282\u70B9\u9009\u62E9"
+socks-port: 7891
