@@ -9,11 +9,11 @@ def test_latency(proxy):
         else:
             url = f"http://{proxy['server']}:{proxy['port']}/ping"
 
-        response = requests.get(url, timeout=5)
+        response = requests.get(url, timeout=10)
         response.raise_for_status()
 
         latency = response.elapsed.total_seconds() * 1000
-        proxy['latency'] = latency
+        proxy['delay'] = latency
         return proxy
     except:
         return None
@@ -31,54 +31,47 @@ def test_all_latencies(proxies):
 def convert_to_clash_yaml(proxies):
     clash_proxies = []
     for proxy in proxies:
+        clash_proxy = {}
+        clash_proxy['name'] = proxy['name']
+
         if proxy['type'] == 'vmess':
-            clash_proxy = {
-                'name': proxy['name'],
-                'type': 'vmess',
-                'server': proxy['server'],
-                'port': proxy['port'],
-                'uuid': proxy['uuid'],
-                'alterId': proxy['alterId'],
-                'cipher': proxy['cipher'],
-                'network': proxy['network'],
-                'ws-path': proxy['ws-path'],
-                'tls': proxy['tls'],
-                'ws-headers': proxy['ws-headers'],
-                'skip-cert-verify': proxy.get('skip-cert-vertify', False)
-            }
+            clash_proxy['type'] = 'vmess'
+            clash_proxy['server'] = proxy['server']
+            clash_proxy['port'] = proxy['port']
+            clash_proxy['uuid'] = proxy['uuid']
+            clash_proxy['alterId'] = proxy['alterId']
+            clash_proxy['cipher'] = proxy['cipher']
+            clash_proxy['tls'] = proxy.get('tls', False)
+            clash_proxy['network'] = proxy.get('network', 'tcp')
+            clash_proxy['ws-path'] = proxy.get('ws-path', '/')
+            clash_proxy['ws-headers'] = proxy.get('ws-headers', {})
+            clash_proxy['skip-cert-verify'] = proxy.get('skip-cert-verify', False)
+
         elif proxy['type'] == 'ss':
-            clash_proxy = {
-                'name': proxy['name'],
-                'type': 'ss',
-                'server': proxy['server'],
-                'port': proxy['port'],
-                'cipher': proxy['cipher'],
-                'password': proxy['password']
-            }
+            clash_proxy['type'] = 'ss'
+            clash_proxy['server'] = proxy['server']
+            clash_proxy['port'] = proxy['port']
+            clash_proxy['cipher'] = proxy['cipher']
+            clash_proxy['password'] = proxy['password']
+
         elif proxy['type'] == 'trojan':
-            clash_proxy = {
-                'name': proxy['name'],
-                'type': 'trojan',
-                'server': proxy['server'],
-                'port': proxy['port'],
-                'password': proxy['password'],
-                'skip-cert-verify': proxy.get('skip-cert-verify', False)
-            }
+            clash_proxy['type'] = 'trojan'
+            clash_proxy['server'] = proxy['server']
+            clash_proxy['port'] = proxy['port']
+            clash_proxy['password'] = proxy['password']
+            clash_proxy['skip-cert-verify'] = proxy.get('skip-cert-verify', False)
+
         elif proxy['type'] == 'ssr':
-            clash_proxy = {
-                'name': proxy['name'],
-                'type': 'ssr',
-                'server': proxy['server'],
-                'port': proxy['port'],
-                'cipher': proxy['cipher'],
-                'password': proxy['password'],
-                'obfs': proxy['obfs'],
-                'protocol': proxy['protocol'],
-                'obfsparam': proxy['obfsparam'],
-                'protoparam': proxy['protoparam']
-            }
-        else:
-            continue
+            clash_proxy['type'] = 'ssr'
+            clash_proxy['server'] = proxy['server']
+            clash_proxy['port'] = proxy['port']
+            clash_proxy['cipher'] = proxy['cipher']
+            clash_proxy['password'] = proxy['password']
+            clash_proxy['obfs'] = proxy['obfs']
+            clash_proxy['protocol'] = proxy['protocol']
+            clash_proxy['obfsparam'] = proxy['obfsparam']
+            clash_proxy['protoparam'] = proxy['protoparam']
+
         clash_proxies.append(clash_proxy)
 
     clash_yaml = {
@@ -97,13 +90,13 @@ if not proxies:
     exit()
 
 # 测试节点延迟
-tested_proxies = test_all_latencies(proxies)
+proxies_with_latency = test_all_latencies(proxies)
 
 # 转换为 Clash YAML 格式
-clash_yaml = convert_to_clash_yaml(tested_proxies)
+clash_yaml = convert_to_clash_yaml(proxies_with_latency)
 
-# 输出 Clash YAML 文件
-with open('./sub/clash.yaml', 'w') as file:
+# 将结果保存为 clash.yaml 文件
+with open('clash.yaml', 'w') as file:
     yaml.dump(clash_yaml, file)
 
 print("Clash YAML file has been generated successfully.")
