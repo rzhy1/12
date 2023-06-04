@@ -23,8 +23,9 @@ yaml_p = '{}/sub_merge_yaml.yaml'.format(sub_merge_path)
 
 
 def content_write(file, output_type):
-    with open(file, 'w+', encoding='utf-8') as f:
-        f.write(output_type)
+    file = open(file, 'w+', encoding='utf-8')
+    file.write(output_type)
+    file.close()
 
 
 class SubMerge:
@@ -49,7 +50,7 @@ class SubMerge:
         content_list = []
         os_call('rm -f ./sub/list/*')
 
-        def test_node_latency(url_info):
+        for index, url_info in enumerate(url_list):
             url, ids, remarks = url_info['url'], url_info['id'], url_info['remarks']
             content = self.sc.convert_remote(url, output_type='url', host='http://127.0.0.1:25500')
             if content.startswith('Url 解析错误'):
@@ -73,10 +74,6 @@ class SubMerge:
             with open(f'{sub_list_path}{ids:0>2d}.txt', 'w+', encoding='utf-8') as f:
                 f.write(error_msg if 'error_msg' in locals() else content)
 
-        print('Testing node latency...\n')
-        with concurrent.futures.ThreadPoolExecutor(max_workers=100) as executor:
-            executor.map(test_node_latency, url_list)
-
         print('Merging nodes...\n')
         content_raw = ''.join(content_list)
 
@@ -85,9 +82,30 @@ class SubMerge:
 
         with concurrent.futures.ThreadPoolExecutor() as executor:
             content_yaml = list(executor.map(merge, [content_raw]))[0]
-
         content_write(yaml_p, content_yaml)
         print(f'Done!')
+
+        # 延迟测试
+        print('Testing node latency...\n')
+        available_nodes = self.test_latency(content_yaml)
+        available_yaml = self.sc.main('\n'.join(available_nodes), 'YAML', 'YAML')
+        content_write('./sub/available_nodes.yaml', available_yaml)
+        print(f'Available nodes: {len(available_nodes)}')
+        print(f'Done testing latency!\n')
+
+    def test_latency(self, content):
+        def test_latency(url):
+            try:
+                response = requests.get(url, timeout=5)
+                if response.status_code == 200:
+                    return url
+            except requests.exceptions.RequestException:
+                return None
+
+        urls = re.findall(r"url: (.+)", content)
+        with concurrent.futures.ThreadPoolExecutor(max_workers=100) as executor:
+            results = list(executor.map(test_latency, urls))
+        return [url for url in results if url is not None]
 
     def geoip_update(self, url):
         print('Downloading Country.mmdb...')
@@ -99,7 +117,7 @@ class SubMerge:
             print('Failed!\n')
 
     def readme_update(self, readme_file='./README.md', sub_list=[]):  # 更新 README 节点信息
-        print('Updating README.md...')
+        print('Updating README.md...\n')
         with open(readme_file, 'r', encoding='utf-8') as f:
             lines = f.readlines()
             f.close()
@@ -118,7 +136,7 @@ class SubMerge:
         # 写入 README 内容
         with open(readme_file, 'w', encoding='utf-8') as f:
             data = ''.join(lines)
-            print('Done!\n')
+            print('README.md updated!\n')
             f.write(data)
 
 
