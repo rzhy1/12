@@ -8,11 +8,19 @@
     "enabled": true
   },
   {
-    "id": 28,
-    "remarks": "www.cfmem.com",
-    "site": "https://oss.v2rayse.com",
-    "url": "https://oss.v2rayse.com/proxies/data/2023-06-04/jzAPMj4.txt",
-    "update_method": "change_date",
+    "id": 3,
+    "remarks": "freefq/free",
+    "site": "https://github.com/freefq/free",
+    "url": "https://raw.githubusercontent.com/freefq/free/master/v2",
+    "update_method": "auto",
+    "enabled": true
+  },
+  {
+    "id": 15,
+    "remarks": "Jsnzkpg/Jsnzkpg",
+    "site": "https://github.com/Jsnzkpg/Jsnzkpg",
+    "url": "https://raw.githubusercontent.com/Jsnzkpg/Jsnzkpg/Jsnzkpg/Jsnzkpg",
+    "update_method": "auto",
     "enabled": true
   },
   {
@@ -24,18 +32,10 @@
     "enabled": true
   },
   {
-    "id": 19,
-    "remarks": "ObcbO/auto-subscribe",
-    "site": "https://github.com/ObcbO/auto-subscribe",
-    "url": "https://raw.githubusercontent.com/mfuu/v2ray/master/v2ray",
-    "update_method": "auto",
-    "enabled": true
-  },
-  {
-    "id": 16,
-    "remarks": "ermaozi/get_subscribe",
-    "site": "https://github.com/ermaozi/get_subscribe",
-    "url": "https://raw.githubusercontent.com/ermaozi/get_subscribe/main/subscribe/clash.yml",
+    "id": 39,
+    "remarks": "peasoft/NoMoreWalls",
+    "site": "https://github.com/peasoft/NoMoreWalls",
+    "url": "https://raw.githubusercontent.com/peasoft/NoMoreWalls/master/list.txt",
     "update_method": "auto",
     "enabled": true
   },
@@ -56,98 +56,10 @@
     "enabled": true
   },
   {
-    "id": 2,
-    "remarks": "xiyaowong/freeFQ",
-    "site": "https://github.com/xiyaowong/freeFQ",
-    "url": "https://raw.githubusercontent.com/xiyaowong/freeFQ/main/v2ray",
-    "update_method": "auto",
-    "enabled": true
-  },
-  {
-    "id": 7,
-    "remarks": "oslook/clash-freenode",
-    "site": "https://github.com/oslook/clash-freenode",
-    "url": "https://raw.githubusercontent.com/oslook/clash-freenode/main/clash.yaml",
-    "update_method": "auto",
-    "enabled": true
-  },
-  {
-    "id": 3,
-    "remarks": "freefq/free",
-    "site": "https://github.com/freefq/free",
-    "url": "https://raw.githubusercontent.com/freefq/free/master/v2",
-    "update_method": "auto",
-    "enabled": true
-  },
-  {
-    "id": 36,
-    "remarks": "Nodefree.org",
-    "site": "https://github.com/Fukki-Z/nodefree",
-    "url": "https://nodefree.org/dy/2023/06/20230604.txt",
-    "update_method": "change_date",
-    "enabled": true
-  },
-  {
-    "id": 24,
-    "remarks": "anaer/Sub",
-    "site": "https://github.com/anaer/Sub",
-    "url": "https://raw.githubusercontent.com/anaer/Sub/main/clash.yaml",
-    "update_method": "auto",
-    "enabled": true
-  },
-  {
-    "id": 10,
-    "remarks": "proxy.yugogo.xyz",
-    "site": "https://proxy.yugogo.xyz",
-    "url": "https://proxy.yugogo.xyz/trojan/sub",
-    "update_method": "auto",
-    "enabled": true
-  },
-  {
-    "id": 34,
-    "remarks": "Pawdroid/Free-servers",
-    "site": "https://github.com/Pawdroid/Free-servers",
-    "url": "https://raw.githubusercontent.com/Pawdroid/Free-servers/main/sub",
-    "update_method": "auto",
-    "enabled": true
-  },
-  {
-    "id": 39,
-    "remarks": "peasoft/NoMoreWalls",
-    "site": "https://github.com/peasoft/NoMoreWalls",
-    "url": "https://raw.githubusercontent.com/peasoft/NoMoreWalls/master/list.txt",
-    "update_method": "auto",
-    "enabled": true
-  },
-  {
     "id": 17,
     "remarks": "wrfree/free",
     "site": "https://github.com/wrfree/free",
     "url": "https://raw.githubusercontent.com/wrfree/free/main/v2",
-    "update_method": "auto",
-    "enabled": true
-  },
-  {
-    "id": 40,
-    "remarks": "ClashNode",
-    "site": "https://clashnode.com/f/freenode",
-    "url": "https://clashnode.com/wp-content/uploads/2023/06/20230604.txt",
-    "update_method": "change_date",
-    "enabled": true
-  },
-  {
-    "id": 15,
-    "remarks": "Jsnzkpg/Jsnzkpg",
-    "site": "https://github.com/Jsnzkpg/Jsnzkpg",
-    "url": "https://raw.githubusercontent.com/Jsnzkpg/Jsnzkpg/Jsnzkpg/Jsnzkpg",
-    "update_method": "auto",
-    "enabled": true
-  },
-  {
-    "id": 14,
-    "remarks": "proxy.yugogo.xyz",
-    "site": "https://proxy.yugogo.xyz",
-    "url": "https://proxy.yugogo.xyz/sip002/sub",
     "update_method": "auto",
     "enabled": true
   },
@@ -160,19 +72,91 @@
     "enabled": true
   },
   {
-    "id": 21,
-    "remarks": "vveg26/getProxy",
-    "site": "https://github.com/vveg26/getProxy",
-    "url": "https://raw.githubusercontent.com/vveg26/get_proxy/main/dist/v2ray.config.txt",
+    "id": 16,
+    "remarks": "ermaozi/get_subscribe",
+    "site": "https://github.com/ermaozi/get_subscribe",
+    "url": "https://raw.githubusercontent.com/ermaozi/get_subscribe/main/subscribe/clash.yml",
     "update_method": "auto",
     "enabled": true
   },
   {
-    "id": 33,
+    "id": 2,
+    "remarks": "xiyaowong/freeFQ",
+    "site": "https://github.com/xiyaowong/freeFQ",
+    "url": "https://raw.githubusercontent.com/xiyaowong/freeFQ/main/v2ray",
+    "update_method": "auto",
+    "enabled": true
+  },
+  {
+    "id": 14,
+    "remarks": "proxy.yugogo.xyz",
+    "site": "https://proxy.yugogo.xyz",
+    "url": "https://proxy.yugogo.xyz/sip002/sub",
+    "update_method": "auto",
+    "enabled": true
+  },
+  {
+    "id": 24,
+    "remarks": "anaer/Sub",
+    "site": "https://github.com/anaer/Sub",
+    "url": "https://raw.githubusercontent.com/anaer/Sub/main/clash.yaml",
+    "update_method": "auto",
+    "enabled": true
+  },
+  {
+    "id": 34,
     "remarks": "Pawdroid/Free-servers",
     "site": "https://github.com/Pawdroid/Free-servers",
-    "url": "https://shadowshare.v2cross.com/publicserver/servers/temp/6etNgGmDo0kilQJq",
-    "update_method": "page_release",
+    "url": "https://raw.githubusercontent.com/Pawdroid/Free-servers/main/sub",
+    "update_method": "auto",
+    "enabled": true
+  },
+  {
+    "id": 28,
+    "remarks": "www.cfmem.com",
+    "site": "https://oss.v2rayse.com",
+    "url": "https://oss.v2rayse.com/proxies/data/2023-06-04/jzAPMj4.txt",
+    "update_method": "change_date",
+    "enabled": true
+  },
+  {
+    "id": 36,
+    "remarks": "Nodefree.org",
+    "site": "https://github.com/Fukki-Z/nodefree",
+    "url": "https://nodefree.org/dy/2023/06/20230604.txt",
+    "update_method": "change_date",
+    "enabled": true
+  },
+  {
+    "id": 19,
+    "remarks": "ObcbO/auto-subscribe",
+    "site": "https://github.com/ObcbO/auto-subscribe",
+    "url": "https://raw.githubusercontent.com/mfuu/v2ray/master/v2ray",
+    "update_method": "auto",
+    "enabled": true
+  },
+  {
+    "id": 7,
+    "remarks": "oslook/clash-freenode",
+    "site": "https://github.com/oslook/clash-freenode",
+    "url": "https://raw.githubusercontent.com/oslook/clash-freenode/main/clash.yaml",
+    "update_method": "auto",
+    "enabled": true
+  },
+  {
+    "id": 13,
+    "remarks": "proxy.yugogo.xyz",
+    "site": "https://proxy.yugogo.xyz",
+    "url": "https://proxy.yugogo.xyz/vmess/sub",
+    "update_method": "auto",
+    "enabled": true
+  },
+  {
+    "id": 40,
+    "remarks": "ClashNode",
+    "site": "https://clashnode.com/f/freenode",
+    "url": "https://clashnode.com/wp-content/uploads/2023/06/20230604.txt",
+    "update_method": "change_date",
     "enabled": true
   },
   {
@@ -184,10 +168,18 @@
     "enabled": true
   },
   {
-    "id": 13,
+    "id": 33,
+    "remarks": "Pawdroid/Free-servers",
+    "site": "https://github.com/Pawdroid/Free-servers",
+    "url": "https://shadowshare.v2cross.com/publicserver/servers/temp/6etNgGmDo0kilQJq",
+    "update_method": "page_release",
+    "enabled": true
+  },
+  {
+    "id": 10,
     "remarks": "proxy.yugogo.xyz",
     "site": "https://proxy.yugogo.xyz",
-    "url": "https://proxy.yugogo.xyz/vmess/sub",
+    "url": "https://proxy.yugogo.xyz/trojan/sub",
     "update_method": "auto",
     "enabled": true
   },
@@ -200,19 +192,19 @@
     "enabled": true
   },
   {
-    "id": 11,
-    "remarks": "\u963f\u4f1f\u79d1\u6280",
-    "site": "https://agit.ai/12/a/",
-    "url": "https://agit.ai/12/a/raw/branch/master/6/6.3v2-awkj",
-    "update_method": "change_date",
+    "id": 21,
+    "remarks": "vveg26/getProxy",
+    "site": "https://github.com/vveg26/getProxy",
+    "url": "https://raw.githubusercontent.com/vveg26/get_proxy/main/dist/v2ray.config.txt",
+    "update_method": "auto",
     "enabled": true
   },
   {
-    "id": 23,
-    "remarks": "changfengoss",
-    "site": "https://github.com/ronghuaxueleng/get_v2",
-    "url": "https://raw.githubusercontent.com/ronghuaxueleng/get_v2/main/pub/combine.yaml",
-    "update_method": "auto",
+    "id": 11,
+    "remarks": "\u963f\u4f1f\u79d1\u6280",
+    "site": "https://agit.ai/12/a/",
+    "url": "https://agit.ai/12/a/raw/branch/master/6/6.4v2-awkj2",
+    "update_method": "change_date",
     "enabled": true
   },
   {
@@ -220,6 +212,14 @@
     "remarks": "mahdibland/V2RayAggregator",
     "site": "https://github.com/mahdibland/V2RayAggregator/",
     "url": "https://raw.githubusercontent.com/mahdibland/V2RayAggregator/master/sub/sub_merge_yaml.yml",
+    "update_method": "auto",
+    "enabled": true
+  },
+  {
+    "id": 23,
+    "remarks": "changfengoss",
+    "site": "https://github.com/ronghuaxueleng/get_v2",
+    "url": "https://raw.githubusercontent.com/ronghuaxueleng/get_v2/main/pub/combine.yaml",
     "update_method": "auto",
     "enabled": true
   }
