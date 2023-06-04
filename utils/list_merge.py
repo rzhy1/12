@@ -1,13 +1,19 @@
+#!/usr/bin/env python3
+
 import json
 import os
 import re
 import yaml
 import requests
+
+from list_update import UpdateUrl
+from sub_convert import SubConvert
+from cv2box.utils import os_call
 from urllib import request
 import concurrent.futures
 
 # 文件路径定义
-Eternity = './Eternity'
+Eterniy = './Eternity'
 readme = './README.md'
 
 sub_list_json = './sub/sub_list.json'
@@ -71,13 +77,14 @@ class SubMerge:
 
         print('Merging nodes...\n')
         content_raw = ''.join(content_list)
+
+        def merge(content):
+            return self.sc.main(content, 'content', 'YAML', {'dup_rm_enabled': True, 'format_name_enabled': True})
+
         with concurrent.futures.ThreadPoolExecutor() as executor:
-            content_yaml = list(executor.map(self.merge, [content_raw]))[0]
+            content_yaml = list(executor.map(merge, [content_raw]))[0]
         content_write(yaml_p, content_yaml)
         print(f'Done!')
-
-    def merge(self, content):
-        return self.sc.main(content, 'content', 'YAML', {'dup_rm_enabled': True, 'format_name_enabled': True})
 
     def geoip_update(self, url):
         print('Downloading Country.mmdb...')
@@ -112,45 +119,32 @@ class SubMerge:
             f.write(data)
 
 
-def test_node_latency(node_info):
-    # 节点延迟测试的逻辑
-    return result
+def test_node_latency(node):
+    url = node['url']
+    response = requests.get(url, timeout=10)
+    if response.status_code == 200:
+        return node
+    return None
 
 
 if __name__ == '__main__':
+    UpdateUrl().update_main()
     sm = SubMerge()
     sub_list_remote = sm.read_list(sub_list_json, split=True)
     sm.sub_merge(sub_list_remote)
     sm.readme_update(readme, sub_list_remote)
 
-    # 读取 sub_merge_yaml.yaml 文件，采用 clash 核心，测试节点的延迟
-    with open(yaml_p, 'r', encoding='utf-8') as f:
-        yaml_content = f.read()
-        clash_config = yaml.safe_load(yaml_content)
+    print('Testing node latency...\n')
 
-    print('\n-----节点延迟测试开始-----')
-    tested_nodes = []
-
+    available_nodes = []
     with concurrent.futures.ThreadPoolExecutor(max_workers=100) as executor:
-        futures = []
-        for proxy in clash_config['proxies']:
-            node_info = {
-                'url': proxy['server'],
-                'id': proxy['name'],
-                'remarks': proxy['name']
-            }
-
-            if node_info['url'] not in tested_nodes:
-                future = executor.submit(test_node_latency, node_info)
-                futures.append(future)
-                tested_nodes.append(node_info['url'])
-
+        futures = [executor.submit(test_node_latency, node) for node in sub_list_remote]
         for future in concurrent.futures.as_completed(futures):
-            result = future.result()
-            print(result)
-            # 将测试通过的节点保存到文件中
-            if result['status'] == 'pass':
-                with open('available_nodes.txt', 'a', encoding='utf-8') as f:
-                    f.write(f"{result['url']}\n")
+            node = future.result()
+            if node:
+                available_nodes.append(node)
 
-    print('-----节点延迟测试完成-----')
+    available_nodes_file = './sub/available_nodes.json'
+    with open(available_nodes_file, 'w', encoding='utf-8') as f:
+        json.dump(available_nodes, f, indent=2)
+    print(f'Available nodes stored in {available_nodes_file}')
