@@ -78,7 +78,7 @@ class SubMerge:
         content_raw = ''.join(content_list)
 
         def merge(content):
-            return self.sc.main(content, 'content', 'YAML', {'dup_check': True})
+            return self.sc.main(content, 'content', 'YAML', {'dup_check': True, 'dup_rm_enabled': True})
 
         sub_content = merge(content_raw)
         content_write(yaml_p, sub_content)
