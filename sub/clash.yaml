@@ -4,7 +4,7 @@ log-level: info
 mixed-port: 7788
 mode: rule
 port: 7890
-proxies: null
+proxies: []
 proxy-groups:
 - name: "\u8282\u70B9\u9009\u62E9"
   proxies:
