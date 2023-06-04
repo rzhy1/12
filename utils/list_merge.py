@@ -23,9 +23,8 @@ yaml_p = '{}/sub_merge_yaml.yaml'.format(sub_merge_path)
 
 
 def content_write(file, output_type):
-    file = open(file, 'w+', encoding='utf-8')
-    file.write(output_type)
-    file.close()
+    with open(file, 'w+', encoding='utf-8') as f:
+        f.write(output_type)
 
 
 class SubMerge:
@@ -54,7 +53,8 @@ class SubMerge:
             url, ids, remarks = url_info['url'], url_info['id'], url_info['remarks']
             content = self.sc.convert_remote(url, output_type='url', host='http://127.0.0.1:25500')
             if content.startswith('Url 解析错误'):
-                content = self.sc.main(self.read_list(sub_list_json)[index]['url'], input_type='url', output_type='url')
+                content = self.sc.main(self.read_list(sub_list_json)[index]['url'], input_type='url',
+                                       output_type='url')
                 if content.startswith('Url 解析错误'):
                     error_msg = 'Url 解析错误'
                     print(f'Writing error of {remarks} to {ids:0>2d}.txt')
@@ -76,12 +76,36 @@ class SubMerge:
 
         print('Merging nodes...\n')
         content_raw = ''.join(content_list)
-        def merge(content):
-            return self.sc.main(content, 'content', 'YAML', {'dup_rm_enabled': True, 'format_name_enabled': True})
-        with concurrent.futures.ThreadPoolExecutor() as executor:
-            content_yaml = list(executor.map(merge, [content_raw]))[0]
+        content_yaml = self.merge_nodes(content_raw)
         content_write(yaml_p, content_yaml)
         print(f'Done!')
+
+    def merge_nodes(self, content):
+        return self.sc.main(content, 'content', 'YAML',
+                            {'dup_rm_enabled': True, 'format_name_enabled': True})
+
+    def test_latency(self, url):
+        try:
+            response = requests.get(url, timeout=10)
+            latency = response.elapsed.total_seconds() * 1000
+            return latency
+        except requests.exceptions.RequestException:
+            return None
+
+    def test_node_latency(self, node):
+        url = node['url']
+        latency = self.test_latency(url)
+        if latency is not None:
+            node['latency'] = latency
+            return node
+        else:
+            return None
+
+    def test_all_node_latency(self, nodes):
+        with concurrent.futures.ThreadPoolExecutor(max_workers=100) as executor:
+            results = list(executor.map(self.test_node_latency, nodes))
+        available_nodes = [node for node in results if node is not None]
+        return available_nodes
 
     def geoip_update(self, url):
         print('Downloading Country.mmdb...')
@@ -93,7 +117,7 @@ class SubMerge:
             print('Failed!\n')
 
     def readme_update(self, readme_file='./README.md', sub_list=[]):  # 更新 README 节点信息
-        print('更新 README.md 中')
+        print('Updating README.md...')
         with open(readme_file, 'r', encoding='utf-8') as f:
             lines = f.readlines()
             f.close()
@@ -112,25 +136,8 @@ class SubMerge:
         # 写入 README 内容
         with open(readme_file, 'w', encoding='utf-8') as f:
             data = ''.join(lines)
-            print('完成!\n')
+            print('Done!\n')
             f.write(data)
-
-    def test_connection(self, url):
-        try:
-            response = requests.get(url, timeout=10)
-            if response.status_code == 200:
-                return url
-        except:
-            return None
-
-    def test_node_connections(self, urls):
-        available_nodes = []
-        with concurrent.futures.ThreadPoolExecutor(max_workers=100) as executor:
-            results = executor.map(self.test_connection, urls)
-            for result in results:
-                if result:
-                    available_nodes.append(result)
-        return available_nodes
 
 
 if __name__ == '__main__':
@@ -138,13 +145,9 @@ if __name__ == '__main__':
     sm = SubMerge()
     sub_list_remote = sm.read_list(sub_list_json, split=True)
     sm.sub_merge(sub_list_remote)
-    sm.readme_update(readme, sub_list_remote)
-
-    print('Testing node connections...\n')
-    urls = [url['url'] for url in sub_list_remote]
-    available_nodes = sm.test_node_connections(urls)
-    available_nodes_file = './available_nodes.txt'
-    with open(available_nodes_file, 'w+', encoding='utf-8') as f:
-        for node in available_nodes:
-            f.write(node + '\n')
-    print(f'Available nodes written to {available_nodes_file}')
+    content_yaml = sm.merge_nodes(open(yaml_p, 'r', encoding='utf-8').read())
+    content_write(yaml_p, content_yaml)
+    available_nodes = sm.test_all_node_latency(yaml.load(content_yaml, Loader=yaml.FullLoader))
+    available_nodes_yaml = yaml.dump(available_nodes, sort_keys=False)
+    content_write('./sub/available_nodes.yaml', available_nodes_yaml)
+    sm.readme_update(readme, available_nodes)
