@@ -27,11 +27,10 @@ def content_write(file, output_type):
     file.write(output_type)
     file.close()
 
-
 class SubMerge:
     def __init__(self):
         self.sc = SubConvert()
-
+        
     def read_list(self, json_file, split=False):  # 将 sub_list.json Url 内容读取为列表
         with open(json_file, 'r', encoding='utf-8') as f:
             raw_list = json.load(f)
@@ -45,7 +44,7 @@ class SubMerge:
                 raw_list[index]['url'] = urls
                 input_list.append(raw_list[index])
         return input_list
-
+        
     def sub_merge(self, url_list):
         content_list = []
         os_call('rm -f ./sub/list/*')
@@ -73,42 +72,16 @@ class SubMerge:
 
             with open(f'{sub_list_path}{ids:0>2d}.txt', 'w+', encoding='utf-8') as f:
                 f.write(error_msg if 'error_msg' in locals() else content)
-
+ 
         print('Merging nodes...\n')
         content_raw = ''.join(content_list)
-
         def merge(content):
-            return self.sc.main(content, 'content', 'YAML', {'dup_check': True, 'dup_rm_enabled': True, 'format_name_enabled': True})
-
-        sub_content = merge(content_raw)
-        content_write(yaml_p, sub_content)
-
-        # 执行去重
-        os_call(f'python3 {Eterniy}/sub_filter.py')
-        print('Done!')
-
-        # 延迟测试
-        print('Testing node latency...\n')
-        available_nodes = self.test_latency(sub_content)
-        available_yaml = self.sc.main('\n'.join(available_nodes), 'YAML', 'YAML')
-        content_write('./sub/available_nodes.yaml', available_yaml)
-        print(f'Available nodes: {len(available_nodes)}')
-        print(f'Done testing latency!\n')
-
-    def test_latency(self, content):
-        def test_latency(url):
-            try:
-                response = requests.get(url, timeout=5)
-                if response.status_code == 200:
-                    return url
-            except requests.exceptions.RequestException:
-                return None
-
-        urls = re.findall(r"url: (.+)", content)
-        with concurrent.futures.ThreadPoolExecutor(max_workers=100) as executor:
-            results = list(executor.map(test_latency, urls))
-        return [url for url in results if url is not None]
-
+            return self.sc.main(content, 'content', 'YAML', {'dup_rm_enabled': True, 'format_name_enabled': True})
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            content_yaml = list(executor.map(merge, [content_raw]))[0]
+        content_write(yaml_p, content_yaml)
+        print(f'Done!')
+                
     def geoip_update(self, url):
         print('Downloading Country.mmdb...')
         try:
@@ -119,7 +92,7 @@ class SubMerge:
             print('Failed!\n')
 
     def readme_update(self, readme_file='./README.md', sub_list=[]):  # 更新 README 节点信息
-        print('Updating README.md...\n')
+        print('更新 README.md 中')
         with open(readme_file, 'r', encoding='utf-8') as f:
             lines = f.readlines()
             f.close()
@@ -134,11 +107,11 @@ class SubMerge:
                     top_amount = len(proxies) - 1
                 lines.insert(index + 1, f'合并节点总数: `{top_amount}`\n')
                 break
-
+        
         # 写入 README 内容
         with open(readme_file, 'w', encoding='utf-8') as f:
             data = ''.join(lines)
-            print('README.md updated!\n')
+            print('完成!\n')
             f.write(data)
 
 
