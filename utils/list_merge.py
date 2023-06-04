@@ -78,15 +78,18 @@ class SubMerge:
         content_raw = ''.join(content_list)
 
         def merge(content):
-            return self.sc.main(content, 'content', 'YAML', {'dup_rm_enabled': True, 'format_name_enabled': True})
+            return self.sc.main(content, 'content', 'YAML', {'dup_check': True})
 
-        content_yaml = merge(content_raw)
-        content_write(yaml_p, content_yaml)
-        print(f'Done!')
+        sub_content = merge(content_raw)
+        content_write(yaml_p, sub_content)
+
+        # 执行去重
+        os_call(f'python3 {Eterniy}/sub_filter.py')
+        print('Done!')
 
         # 延迟测试
         print('Testing node latency...\n')
-        available_nodes = self.test_latency(content_yaml)
+        available_nodes = self.test_latency(sub_content)
         available_yaml = self.sc.main('\n'.join(available_nodes), 'YAML', 'YAML')
         content_write('./sub/available_nodes.yaml', available_yaml)
         print(f'Available nodes: {len(available_nodes)}')
