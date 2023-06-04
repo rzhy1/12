@@ -80,8 +80,7 @@ class SubMerge:
         def merge(content):
             return self.sc.main(content, 'content', 'YAML', {'dup_rm_enabled': True, 'format_name_enabled': True})
 
-        with concurrent.futures.ThreadPoolExecutor() as executor:
-            content_yaml = list(executor.map(merge, [content_raw]))[0]
+        content_yaml = merge(content_raw)
         content_write(yaml_p, content_yaml)
         print(f'Done!')
 
