@@ -79,22 +79,11 @@ class SubMerge:
         content_raw = ''.join(content_list)
 
         def merge(content):
-            return self.sc.main(content, input_type='content', output_type='YAML',
-                                config={'remark': 'ssr or vmess or trojan or ss or v2ray or clash'},
-                                config_out={"geoip": True, "multi_proxy": True, "compatible": True})
+            return self.sc.main(content, input_type='content', output_type='YAML')
 
         content_yaml = merge(content_raw)
         content_write(yaml_p, content_yaml)
         print(f'Done!')
-
-    def geoip_update(self, url):
-        print('Downloading Country.mmdb...')
-        try:
-            url = "https://raw.githubusercontent.com/Loyalsoldier/geoip/release/Country.mmdb"
-            request.urlretrieve(url, './utils/Country.mmdb')
-            print('Success!\n')
-        except Exception:
-            print('Failed!\n')
 
     def readme_update(self, readme_file='./README.md', sub_list=[]):  # 更新 README 节点信息
         print('Updating README.md\n')
