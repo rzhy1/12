@@ -54,7 +54,7 @@ class SubMerge:
             url, ids, remarks = url_info['url'], url_info['id'], url_info['remarks']
             content = self.sc.convert_remote(url, output_type='url', host='http://127.0.0.1:25500')
             if content.startswith('Url 解析错误'):
-                content = self.sc.main(self.read_list(sub_list_json)[index]['url'], input_type='url',
+                content = self.sc.main([self.read_list(sub_list_json)[index]['url']], input_type='url',
                                        output_type='url')
                 if content.startswith('Url 解析错误'):
                     error_msg = 'Url 解析错误'
@@ -79,9 +79,9 @@ class SubMerge:
         content_raw = ''.join(content_list)
 
         def merge(content):
-            return self.sc.main(content, 'content', 'YAML',
-                                {'remark': 'ssr or vmess or trojan or ss or v2ray or clash'},
-                                {"geoip": True, "multi_proxy": True, "compatible": True})
+            return self.sc.main(content, input_type='content', output_type='YAML',
+                                config={'remark': 'ssr or vmess or trojan or ss or v2ray or clash'},
+                                config_out={"geoip": True, "multi_proxy": True, "compatible": True})
 
         content_yaml = merge(content_raw)
         content_write(yaml_p, content_yaml)
