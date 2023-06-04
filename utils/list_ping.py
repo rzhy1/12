@@ -12,11 +12,11 @@ def test_latency(node):
         if response.status_code == 204:
             end_time = time.time()
             latency = end_time - start_time
-            node["latency"] = latency
+            node["delay"] = round(latency * 1000, 2)  # Convert to milliseconds and round to 2 decimal places
         else:
-            node["latency"] = -1  # Indicate failed connection
+            node["delay"] = -1  # Indicate failed connection
     except:
-        node["latency"] = -1  # Indicate failed connection
+        node["delay"] = -1  # Indicate failed connection
 
 # 读取sub_merge_yaml.yaml文件
 sub_merge_path = "./sub/sub_merge_yaml.yaml"
@@ -37,7 +37,7 @@ for thread in threads:
     thread.join()
 
 # 移除连接失败的节点
-proxies = [proxy for proxy in proxies if proxy["latency"] != -1]
+proxies = [proxy for proxy in proxies if proxy["delay"] != -1]
 
 # 读取config.yml文件
 config_file = "./config/config.yml"
@@ -50,7 +50,7 @@ config["proxies"] = proxies
 # 写入clash.yaml文件
 clash_config_file = "./sub/clash.yaml"
 with open(clash_config_file, "w") as file:
-    yaml.safe_dump(config, file)
+    yaml.dump(config, file, sort_keys=False)
 
 # 打印成功消息
 print("Clash configuration file generated: sub/clash.yaml")
