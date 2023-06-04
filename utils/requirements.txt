@@ -1,6 +1,5 @@
-geoip2==4.4.0
-requests==2.26.0
-PyYAML==6.0
+geoip2
+requests
+PyYAML
 cv2box
 beautifulsoup4
-vmess
