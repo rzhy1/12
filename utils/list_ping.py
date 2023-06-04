@@ -48,6 +48,7 @@ with open(config_file, "r") as file:
 config["proxies"] = proxies
 
 # 写入clash.yaml文件
+os.makedirs("./sub", exist_ok=True)
 clash_config_file = "./sub/clash.yaml"
 with open(clash_config_file, "w") as file:
     yaml.dump(config, file, sort_keys=False)
