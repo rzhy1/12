@@ -80,7 +80,8 @@ class SubMerge:
 
         def merge(content):
             return self.sc.main(content, 'content', 'YAML',
-                                {'dup_rm_enabled': True, 'format_name_enabled': True})
+                                {'remark': 'ssr or vmess or trojan or ss or v2ray or clash'},
+                                {"geoip": True, "multi_proxy": True, "compatible": True})
 
         content_yaml = merge(content_raw)
         content_write(yaml_p, content_yaml)
@@ -96,7 +97,7 @@ class SubMerge:
             print('Failed!\n')
 
     def readme_update(self, readme_file='./README.md', sub_list=[]):  # 更新 README 节点信息
-        print('更新 README.md 中')
+        print('Updating README.md\n')
         with open(readme_file, 'r', encoding='utf-8') as f:
             lines = f.readlines()
             f.close()
@@ -115,16 +116,46 @@ class SubMerge:
         # 写入 README 内容
         with open(readme_file, 'w', encoding='utf-8') as f:
             data = ''.join(lines)
-            print('完成!\n')
+            print('Done!\n')
             f.write(data)
 
+    def test_node_latency(self, yaml_file):
+        print('Testing node latency...\n')
 
-def test_node_latency(node):
-    url = node['url']
-    response = requests.get(url, timeout=5)
-    if response.status_code == 200:
-        return node
-    return None
+        with open(yaml_file, 'r', encoding='utf-8') as f:
+            yaml_content = f.read()
+
+        nodes = yaml.safe_load(yaml_content)
+
+        available_nodes = []
+
+        def test_latency(node):
+            url = node.get('url', '')
+            proxies = {
+                'http': url,
+                'https': url
+            }
+            try:
+                response = requests.get('http://www.google.com', proxies=proxies, timeout=10)
+                if response.status_code == 200:
+                    return node
+            except Exception:
+                pass
+            return None
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=100) as executor:
+            results = list(executor.map(test_latency, nodes))
+
+        for result in results:
+            if result is not None:
+                available_nodes.append(result)
+
+        available_yaml = yaml.dump(available_nodes, sort_keys=False)
+
+        available_yaml_path = os.path.join(sub_merge_path, 'available_nodes.yaml')
+        content_write(available_yaml_path, available_yaml)
+
+        print('Latency testing completed!')
 
 
 if __name__ == '__main__':
@@ -133,24 +164,4 @@ if __name__ == '__main__':
     sub_list_remote = sm.read_list(sub_list_json, split=True)
     sm.sub_merge(sub_list_remote)
     sm.readme_update(readme, sub_list_remote)
-
-    print('Testing node latency...\n')
-
-    with open(yaml_p, 'r', encoding='utf-8') as f:
-        content_yaml = f.read()
-        content_yaml = yaml.safe_load(content_yaml)
-        nodes = content_yaml['proxies']
-
-    available_nodes = []
-    with concurrent.futures.ThreadPoolExecutor(max_workers=100) as executor:
-        futures = [executor.submit(test_node_latency, node) for node in nodes]
-        for future in concurrent.futures.as_completed(futures):
-            node = future.result()
-            if node:
-                available_nodes.append(node)
-
-    available_nodes_yaml = {'proxies': available_nodes}
-    available_nodes_file = './sub/available_nodes.yaml'
-    with open(available_nodes_file, 'w', encoding='utf-8') as f:
-        yaml.dump(available_nodes_yaml, f, allow_unicode=True)
-    print(f'Available nodes stored in {available_nodes_file}')
+    sm.test_node_latency(yaml_p)
