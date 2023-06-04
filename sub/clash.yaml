@@ -1,46 +1,46 @@
-allow-lan: false
-external-controller: 127.0.0.1:9090
-log-level: info
-mixed-port: 7788
-mode: rule
 port: 7890
+socks-port: 7891
+mixed-port: 7788
+allow-lan: false
+mode: rule
+log-level: info
+external-controller: 127.0.0.1:9090
 proxies: []
 proxy-groups:
 - name: "\u8282\u70B9\u9009\u62E9"
+  type: select
   proxies:
   - "\u81EA\u52A8\u9009\u62E9"
   - "\u8D1F\u8F7D\u5747\u8861"
   - "\u5931\u8D25\u5207\u6362"
   - DIRECT
-  type: select
-- interval: 60
-  lazy: true
-  name: "\u81EA\u52A8\u9009\u62E9"
-  proxies: null
-  tolerance: 500
+- name: "\u81EA\u52A8\u9009\u62E9"
   type: url-test
   url: https://github.com/explore
-- interval: 300
-  name: "\u8D1F\u8F7D\u5747\u8861"
+  interval: 60
+  lazy: true
+  tolerance: 500
   proxies: null
-  strategy: consistent-hashing
-  tolerance: 200
+- name: "\u8D1F\u8F7D\u5747\u8861"
   type: load-balance
+  strategy: consistent-hashing
   url: https://github.com/explore
-- interval: 300
-  name: "\u5931\u8D25\u5207\u6362"
-  proxies: null
+  interval: 300
   tolerance: 200
+  proxies: null
+- name: "\u5931\u8D25\u5207\u6362"
   type: fallback
   url: https://github.com/explore
+  interval: 300
+  tolerance: 200
+  proxies: null
 rule-providers:
   Reject:
-    behavior: domain
-    interval: 86400
-    path: ./ruleset/TopFreeProxies/reject.yaml
     type: http
+    behavior: domain
     url: https://fastly.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/reject.txt
+    path: ./ruleset/TopFreeProxies/reject.yaml
+    interval: 86400
 rules:
 - RULE-SET,Reject,REJECT,no-resolve
 - "MATCH,\u8282\u70B9\u9009\u62E9"
-socks-port: 7891
