@@ -1,102 +1,81 @@
 import yaml
+import threading
 import requests
-import concurrent.futures
 
+# 读取sub_merge_yaml.yaml文件
+with open('./sub/sub_merge_yaml.yaml', 'r', encoding='utf-8') as file:
+    config = yaml.safe_load(file)
+
+proxies = config['proxies']
+
+# 定义延迟测试的目标URL
+target_url = 'https://www.YouTube.com/generate_204'
+
+# 创建结果列表
+results = []
+
+# 定义测试函数
 def test_latency(proxy):
     try:
-        if proxy['type'] == 'ssr':
-            url = f"http://{proxy['server']}:{proxy['port']}/"
-        else:
-            url = f"http://{proxy['server']}:{proxy['port']}/ping"
-
-        response = requests.get(url, timeout=10)
+        proxies = {
+            'http': f"http://{proxy['server']}:{proxy['port']}",
+            'https': f"http://{proxy['server']}:{proxy['port']}"
+        }
+        response = requests.get(target_url, proxies=proxies, timeout=10)
         response.raise_for_status()
+        results.append({'name': proxy['name'], 'delay': response.elapsed.total_seconds()})
+    except Exception as e:
+        print(f"Error testing {proxy['name']}: {str(e)}")
 
-        latency = response.elapsed.total_seconds() * 1000
-        proxy['delay'] = latency
-        return proxy
-    except:
-        return None
+# 创建线程列表
+threads = []
 
-def test_all_latencies(proxies):
-    results = []
-    with concurrent.futures.ThreadPoolExecutor(max_workers=100) as executor:
-        futures = [executor.submit(test_latency, proxy) for proxy in proxies]
-        for future in concurrent.futures.as_completed(futures):
-            result = future.result()
-            if result is not None:
-                results.append(result)
-    return results
+# 启动多线程测试
+for proxy in proxies:
+    thread = threading.Thread(target=test_latency, args=(proxy,))
+    thread.start()
+    threads.append(thread)
 
-def convert_to_clash_yaml(proxies):
-    clash_proxies = []
-    for proxy in proxies:
-        clash_proxy = {}
-        clash_proxy['name'] = proxy['name']
+    # 控制线程数为100
+    if len(threads) >= 100:
+        for thread in threads:
+            thread.join()
+        threads.clear()
 
-        if proxy['type'] == 'vmess':
-            clash_proxy['type'] = 'vmess'
-            clash_proxy['server'] = proxy['server']
-            clash_proxy['port'] = proxy['port']
-            clash_proxy['uuid'] = proxy['uuid']
-            clash_proxy['alterId'] = proxy['alterId']
-            clash_proxy['cipher'] = proxy['cipher']
-            clash_proxy['tls'] = proxy.get('tls', False)
-            clash_proxy['network'] = proxy.get('network', 'tcp')
-            clash_proxy['ws-path'] = proxy.get('ws-path', '/')
-            clash_proxy['ws-headers'] = proxy.get('ws-headers', {})
-            clash_proxy['skip-cert-verify'] = proxy.get('skip-cert-verify', False)
+# 等待剩余线程执行完成
+for thread in threads:
+    thread.join()
 
-        elif proxy['type'] == 'ss':
-            clash_proxy['type'] = 'ss'
-            clash_proxy['server'] = proxy['server']
-            clash_proxy['port'] = proxy['port']
-            clash_proxy['cipher'] = proxy['cipher']
-            clash_proxy['password'] = proxy['password']
+# 按延迟排序结果列表
+sorted_results = sorted(results, key=lambda x: x['delay'])
 
-        elif proxy['type'] == 'trojan':
-            clash_proxy['type'] = 'trojan'
-            clash_proxy['server'] = proxy['server']
-            clash_proxy['port'] = proxy['port']
-            clash_proxy['password'] = proxy['password']
-            clash_proxy['skip-cert-verify'] = proxy.get('skip-cert-verify', False)
+# 构建Clash配置文件
+clash_config = {
+    'proxies': {
+        proxy['name']: {
+            'type': 'http',
+            'server': proxy['server'],
+            'port': proxy['port'],
+            'delay': result['delay'],
+            'url': target_url
+        } for proxy, result in zip(proxies, sorted_results)
+    },
+    'proxy-groups': [
+        {
+            'name': 'proxies',
+            'type': 'select',
+            'proxies': [proxy['name'] for proxy in proxies]
+        }
+    ]
+}
 
-        elif proxy['type'] == 'ssr':
-            clash_proxy['type'] = 'ssr'
-            clash_proxy['server'] = proxy['server']
-            clash_proxy['port'] = proxy['port']
-            clash_proxy['cipher'] = proxy['cipher']
-            clash_proxy['password'] = proxy['password']
-            clash_proxy['obfs'] = proxy['obfs']
-            clash_proxy['protocol'] = proxy['protocol']
-            clash_proxy['obfsparam'] = proxy['obfsparam']
-            clash_proxy['protoparam'] = proxy['protoparam']
+# 读取当前目录下的config.yml文件作为模板
+with open('./config/config.yml', 'r', encoding='utf-8') as file:
+    template = yaml.safe_load(file)
 
-        clash_proxies.append(clash_proxy)
+# 更新Clash配置文件的其他字段
+clash_config.update(template)
 
-    clash_yaml = {
-        'proxies': clash_proxies
-    }
-
-    return clash_yaml
-
-# 读取 sub_merge_yaml.yaml 文件
-with open('./sub/sub_merge_yaml.yaml', 'r') as file:
-    data = yaml.safe_load(file)
-
-proxies = data.get('proxies', [])
-if not proxies:
-    print("No proxies found in the YAML file.")
-    exit()
-
-# 测试节点延迟
-proxies_with_latency = test_all_latencies(proxies)
-
-# 转换为 Clash YAML 格式
-clash_yaml = convert_to_clash_yaml(proxies_with_latency)
-
-# 将结果保存为 clash.yaml 文件
-with open('clash.yaml', 'w') as file:
-    yaml.dump(clash_yaml, file)
-
-print("Clash YAML file has been generated successfully.")
+# 保存为clash.yaml文件
+with open('./sub/clash.yaml', 'w', encoding='utf-8') as file:
+    yaml.safe_dump(clash_config, file)
