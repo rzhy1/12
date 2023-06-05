@@ -53,5 +53,23 @@ clash_config_file = "./sub/clash.yaml"
 with open(clash_config_file, "w") as file:
     yaml.dump(config, file, sort_keys=False)
 
+# 生成完整的 Clash 配置文件
+complete_config = {
+    "port": 7890,  # 替换为您的 Clash 监听端口
+    "socks-port": 7891,  # 替换为您的 Clash Socks5 监听端口
+    "allow-lan": True,
+    "mode": "Rule",
+    "log-level": "info",
+    "external-controller": "0.0.0.0:9090",  # 替换为您的 Clash 控制端口
+    "proxies": config["proxies"],
+    "proxy-groups": config["proxy-groups"],
+    "rules": config["rules"]
+}
+
+clash_complete_config_file = "./sub/clash_complete.yaml"
+with open(clash_complete_config_file, "w") as file:
+    yaml.dump(complete_config, file, sort_keys=False)
+
 # 打印成功消息
 print("Clash configuration file generated: sub/clash.yaml")
+print("Complete Clash configuration file generated: sub/clash_complete.yaml")
