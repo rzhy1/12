@@ -37,12 +37,6 @@ jobs:
         wget -O subconverter.tar.gz https://github.com/tindy2013/subconverter/releases/latest/download/subconverter_linux64.tar.gz
         tar -zxvf subconverter.tar.gz -C ./
         chmod +x ./subconverter/subconverter && nohup ./subconverter/subconverter >./subconverter.log 2>&1 &
-
-        wget -O clash-linux-amd64-v1.16.0.gz https://github.com/Dreamacro/clash/releases/download/v1.16.0/clash-linux-amd64-v1.16.0.gz
-        gunzip clash-linux-amd64-v1.16.0.gz
-        cd clash-linux-amd64-v1.16.0
-        tar -xf clash-linux-amd64
-        sudo mv clash /usr/local/bin
         
         python ./utils/list_merge.py
         python ./utils/list_ping.py
