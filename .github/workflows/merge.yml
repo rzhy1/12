@@ -40,6 +40,7 @@ jobs:
 
         wget -O clash-linux-amd64-v1.16.0.gz https://github.com/Dreamacro/clash/releases/download/v1.16.0/clash-linux-amd64-v1.16.0.gz
         gunzip clash-linux-amd64-v1.16.0.gz
+        cd clash-linux-amd64-v1.16.0
         tar -xf clash-linux-amd64
         sudo mv clash /usr/local/bin
         
