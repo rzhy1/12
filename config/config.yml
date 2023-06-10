@@ -1,50 +1,42 @@
-port: 7890
-socks-port: 7891
 mixed-port: 7788
-allow-lan: false
-mode: rule
-log-level: info
+socks-port: 7891
+allow-lan: true
+log-level: silent
 external-controller: 127.0.0.1:9090
-
+experimental:
+  ignore-resolve-fail: true
+cfw-latency-timeout: 2000
+cfw-latency-url: http://www.gstatic.com/generate_204
 proxies:
-
+  - {name: "🇺🇸 4,5|美国【付费推荐：v1.mk/vip】198", server: 104.21.53.35, port: 80, type: vmess, uuid: 09c1d32d-4458-4ebf-b36d-4dd732bae3aa, alterId: 0, cipher: auto, tls: false, network: ws, ws-opts: {path: /yxzbp, headers: {Host: buyvm1.yxjnode.com}}}
 proxy-groups:
-  - name: 节点选择
+  - name: 🚀 节点选择
     type: select
     proxies:
-      - 自动选择
-      - 负载均衡
-      - 失败切换
+      - ♻️ 自动选择
+      - 🔮 负载均衡
+      - 🔯 故障转移
       - DIRECT
-  - name: 自动选择
-    type: url-test
-    url: 'https://github.com/explore'
-    interval: 60
-    lazy: true
-    tolerance: 500
-    proxies:
-  - name: 负载均衡
+      - 🇺🇸 4,5|美国【付费推荐：v1.mk/vip】198
+  - name: 🔮 负载均衡
     type: load-balance
     strategy: consistent-hashing
-    url: https://github.com/explore
-    interval: 300
-    tolerance: 200
+    url: http://www.YouTube.com/generate_204
+    interval: 180
     proxies:
-  - name: 失败切换
+      - 🇺🇸 4,5|美国【付费推荐：v1.mk/vip】198
+
+  - name: 🔯 故障转移
     type: fallback
-    url: https://github.com/explore
-    interval: 300
-    tolerance: 200
+    url: http://www.YouTube.com/generate_204
+    interval: 180
     proxies:
-
-rule-providers:
-  Reject:
-    type: http
-    behavior: domain
-    url: https://fastly.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/reject.txt
-    path: ./ruleset/TopFreeProxies/reject.yaml
-    interval: 86400
-
-rules:
-  - RULE-SET,Reject,REJECT,no-resolve
-  - MATCH,节点选择
+      - 🇺🇸 4,5|美国【付费推荐：v1.mk/vip】198
+  - name: 🐟 漏网之鱼
+    type: select
+    proxies:
+      - 🚀 节点选择
+      - ♻️ 自动选择
+      - 🔮 负载均衡
+      - 🔯 故障转移
+      - DIRECT
