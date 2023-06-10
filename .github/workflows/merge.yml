@@ -39,7 +39,7 @@ jobs:
         chmod +x ./subconverter/subconverter && nohup ./subconverter/subconverter >./subconverter.log 2>&1 &
 
         wget -O clash.gz https://github.com/Dreamacro/clash/releases/download/v1.16.0/clash-linux-amd64-v1.16.0.gz
-        tar -zxvf clash.gz
+        tar -zxvf clash.gz -C ./
         sudo mv clash /usr/local/bin
         
         python ./utils/list_merge.py
