@@ -3,4 +3,3 @@ requests
 PyYAML
 cv2box
 beautifulsoup4
-clash
