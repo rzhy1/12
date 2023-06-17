@@ -39,7 +39,7 @@ jobs:
         chmod +x ./subconverter/subconverter && nohup ./subconverter/subconverter >./subconverter.log 2>&1 &
         
         python ./utils/list_merge.py
-        python ./utils/list_ping.py
+        # python ./utils/list_ping.py
       
     - name: 提交更改
       run: |                 
