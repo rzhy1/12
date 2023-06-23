@@ -75,7 +75,7 @@
     "id": 9,
     "remarks": "Leon406/SubCrawler",
     "site": "https://github.com/Leon406/SubCrawler",
-    "url": "https://raw.githubusercontent.com/Leon406/SubCrawler/main/sub/share/v2",
+    "url": "https://raw.githubusercontent.com/Leon406/SubCrawler/main/sub/share/all2",
     "update_method": "auto",
     "enabled": true
   },
@@ -97,11 +97,11 @@
   },
   {
     "id": 12,
-    "remarks": "mahdibland/V2RayAggregator数量多",
-    "site": "https://github.com/mahdibland/V2RayAggregator/",
-    "url": "https://raw.githubusercontent.com/mahdibland/V2RayAggregator/master/sub/sub_merge_yaml.yml",
+    "remarks": "Leon406/SubCrawler",
+    "site": "https://github.com/Leon406/SubCrawler",
+    "url": "https://raw.githubusercontent.com/Leon406/SubCrawler/main/sub/share/vless",
     "update_method": "auto",
-    "enabled": false
+    "enabled": true
   },
   {
     "id": 13,
