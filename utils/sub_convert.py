@@ -621,7 +621,7 @@ class SubConvert:
             url_content = url_content.replace('_', '/')
         # print(len(url_content))
         missing_padding = len(url_content) % 4
-        return base64.urlsafe_b64decode(data + '=' * (4 - len(data) % 4))
+        return base64.urlsafe_b64decode(url_content + '=' * (4 - len(url_content) % 4))
         if missing_padding != 0:
             url_content += '=' * (4 - missing_padding)  # 不是4的倍数后加= https://www.cnblogs.com/wswang/p/7717997.html
         try:
