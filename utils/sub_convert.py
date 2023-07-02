@@ -405,7 +405,12 @@ class SubConvert:
                         yaml_url.setdefault('protoparam', '')
         
                     yaml_url.setdefault('group', self.base64_decode(param_dic['group']))
-                    url_list.append(yaml_url)
+                    
+                    # 判断节点名称、密码和obfsparam是否包含乱码字符，如果有则不加入url_list
+                    if all(ord(c) < 128 for c in yaml_url['name']) and all(ord(c) < 128 for c in yaml_url['password']) and all(ord(c) < 128 for c in yaml_url['obfsparam'])and all(ord(c) < 128 for c in yaml_url['protoparam']):
+                        url_list.append(yaml_url)
+                    else:
+                        print('节点包含乱码字符，已被忽略')
                 except Exception as err:
                     print(f'yaml_encode 解析 ssr 节点发生错误: {err}')
                     pass
