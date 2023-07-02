@@ -227,11 +227,12 @@ class SubConvert:
                 proxy_compared = proxies_list[begin]
 
                 begin_2 = begin + 1
-                while begin_2 <= (length - 1):
+                while begin_2 < length:
                     if proxy_compared['server'] == proxies_list[begin_2]['server'] and proxy_compared['port'] == proxies_list[begin_2]['port']:
                         proxies_list.pop(begin_2)
                         length -= 1
-                    begin_2 += 1
+                    else:
+                        begin_2 += 1
                 begin += 1
 
         url_list = []
