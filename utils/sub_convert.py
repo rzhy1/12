@@ -204,7 +204,7 @@ class SubConvert:
             return '订阅内容解析错误'
 
     # 输入节点配置字典, 对节点进行区域的筛选和重命名，输出 YAML 文本
-    def makeup(self, input, dup_rm_enabled=False, format_name_enabled=False):
+    def makeup(self, input, dup_rm_enabled=True, format_name_enabled=False):
         # 区域判断(Clash YAML): https://blog.csdn.net/CSDN_duomaomao/article/details/89712826 (ip-api)
         if isinstance(input, dict):
             sub_content = input
