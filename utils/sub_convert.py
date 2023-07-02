@@ -368,38 +368,38 @@ class SubConvert:
                     print(f'yaml_encode 解析 ss 节点发生错误: {err}')
                     pass
 
-        #    if 'ssr://' in line:
-        #        try:
-        #            ssr_content = self.base64_decode(line.replace('ssr://', ''))
-        #
-        #                    parts = re.split(':', ssr_content)
-        #                    if len(parts) != 6:
-        #                        print('SSR 格式错误: %s' % ssr_content)
-        #                    password_and_params = parts[5]
-        #                    password_and_params = re.split('/\?', password_and_params)
-        #                    password_encode_str = password_and_params[0]
-        #                    params = password_and_params[1]
-        #
-        #            param_parts = re.split('\&', params)
-        #            param_dic = {}
-        #            for part in param_parts:
-        #                key_and_value = re.split('\=', part)
-        #                param_dic[key_and_value[0]] = key_and_value[1]
-        #            yaml_url.setdefault('name', self.base64_decode(param_dic['remarks']))
-        #            yaml_url.setdefault('server', parts[0])
-        #            yaml_url.setdefault('port', parts[1])
-        #            yaml_url.setdefault('type', 'ssr')
-        #            yaml_url.setdefault('cipher', parts[3])
-        #            yaml_url.setdefault('password', self.base64_decode(password_encode_str))
-        #            yaml_url.setdefault('obfs', parts[4])
-        #            yaml_url.setdefault('protocol', parts[2])
-        #            yaml_url.setdefault('obfsparam', self.base64_decode(param_dic['obfsparam']))
-        #            yaml_url.setdefault('protoparam', self.base64_decode(param_dic['protoparam']))
-        #            yaml_url.setdefault('group', self.base64_decode(param_dic['group']))
-        #            url_list.append(yaml_url)
-        #        except Exception as err:
-        #            print(f'yaml_encode 解析 ssr 节点发生错误: {err}')
-        #            pass
+            if 'ssr://' in line:
+                try:
+                    ssr_content = self.base64_decode(line.replace('ssr://', ''))
+        
+                            parts = re.split(':', ssr_content)
+                            if len(parts) != 6:
+                                print('SSR 格式错误: %s' % ssr_content)
+                            password_and_params = parts[5]
+                            password_and_params = re.split('/\?', password_and_params)
+                            password_encode_str = password_and_params[0]
+                            params = password_and_params[1]
+        
+                    param_parts = re.split('\&', params)
+                    param_dic = {}
+                    for part in param_parts:
+                        key_and_value = re.split('\=', part)
+                        param_dic[key_and_value[0]] = key_and_value[1]
+                    yaml_url.setdefault('name', self.base64_decode(param_dic['remarks']))
+                    yaml_url.setdefault('server', parts[0])
+                    yaml_url.setdefault('port', parts[1])
+                    yaml_url.setdefault('type', 'ssr')
+                    yaml_url.setdefault('cipher', parts[3])
+                    yaml_url.setdefault('password', self.base64_decode(password_encode_str))
+                    yaml_url.setdefault('obfs', parts[4])
+                    yaml_url.setdefault('protocol', parts[2])
+                    yaml_url.setdefault('obfsparam', self.base64_decode(param_dic['obfsparam'])) if param_dic.get('obfsparam') else yaml_url.setdefault('obfsparam', '')
+                    yaml_url.setdefault('protoparam', self.base64_decode(param_dic['protoparam'])) if param_dic.get('protoparam') else yaml_url.setdefault('protoparam', '')
+                    yaml_url.setdefault('group', self.base64_decode(param_dic['group']))
+                    url_list.append(yaml_url)
+                except Exception as err:
+                    print(f'yaml_encode 解析 ssr 节点发生错误: {err}')
+                    pass
 
             if 'trojan://' in line:
                 try:
