@@ -307,7 +307,7 @@ class SubConvert:
                     if vmess_config['id'] == '' or vmess_config['id'] is None:
                         print('节点格式错误')
                     else:
-                        yaml_url['name'] = urllib.parse.unquote(str(vmess_config['ps']))
+                        yaml_url['name'] = "'" + urllib.parse.unquote(str(vmess_config['ps'])) + "'"
                         yaml_url.setdefault('server', vmess_config['add'])
                         yaml_url.setdefault('port', int(vmess_config['port']))
                         yaml_url.setdefault('type', 'vmess')
