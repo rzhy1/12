@@ -41,11 +41,11 @@
   },
   {
     "id": 5,
-    "remarks": "vpei/Free-Node-Merge",
-    "site": "https://github.com/vpei/Free-Node-Merge",
-    "url": "https://raw.githubusercontent.com/vpei/free-node-1/main/o/allnode.txt",
+    "remarks": "aiboboxx/v2rayfree",
+    "site": "https://github.com/aiboboxx/v2rayfree",
+    "url": "https://raw.githubusercontent.com/aiboboxx/v2rayfree/main/v2",
     "update_method": "auto",
-    "enabled": false
+    "enabled": true
   },
   {
     "id": 6,
@@ -187,7 +187,7 @@
     "id": 23,
     "remarks": "changfengoss",
     "site": "https://github.com/ronghuaxueleng/get_v2",
-    "url": "https://raw.githubusercontent.com/ronghuaxueleng/get_v2/main/pub/combine.yaml",
+    "url": "https://raw.githubusercontent.com/ronghuaxueleng/get_v2/main/pub/combine.yaml|https://raw.githubusercontent.com/ronghuaxueleng/get_v2/main/pub/cfmem.yaml|https://raw.githubusercontent.com/ronghuaxueleng/get_v2/main/pub/changfengoss.yaml",
     "update_method": "auto",
     "enabled": true
   },
@@ -221,7 +221,7 @@
     "site": "https://github.com/ronghuaxueleng/get_v2",
     "url": "https://raw.githubusercontent.com/ronghuaxueleng/get_v2/main/pub/changfengoss.yaml",
     "update_method": "auto",
-    "enabled": true
+    "enabled": false
   },
   {
     "id": 28,
@@ -261,7 +261,7 @@
     "site": "https://nodefree.org",
     "url": "https://nodefree.org/dy/2023/02/20230224.txt",
     "update_method": "change_date",
-    "enabled": false
+    "enabled": true
   },
   {
     "id": 33,
@@ -291,9 +291,9 @@
     "id": 36,
     "remarks": "Nodefree.org",
     "site": "https://github.com/Fukki-Z/nodefree",
-    "url": "https://nodefree.org/dy/2023/07/20230705.txt",
+    "url": "https://nodefree.org/dy/2023/07/20230708.txt",
     "update_method": "change_date",
-    "enabled": true
+    "enabled": false
   },
   {
     "id": 37,
