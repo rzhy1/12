@@ -364,7 +364,7 @@ class SubConvert:
                     yaml_url.setdefault('type', 'ss')
                     yaml_url.setdefault('cipher', method_part)
                     yaml_url.setdefault('password', password_part)
-                        url_list.append(yaml_url)
+                    url_list.append(yaml_url)
                 except Exception as err:
                     print(f'yaml_encode 解析 ss 节点发生错误: {err}')
                     pass
@@ -448,7 +448,7 @@ class SubConvert:
                                 yaml_url.setdefault('tls', False)
 
                     yaml_url.setdefault('skip-cert-verify', True)
-                        url_list.append(yaml_url)
+                    url_list.append(yaml_url)
                 except Exception as err:
                     print(f'yaml_encode 解析 trojan 节点发生错误: {err}')
                     pass
