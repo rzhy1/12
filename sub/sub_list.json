@@ -3,7 +3,7 @@
     "id": 0,
     "remarks": "pojiezhiyuanjun/freev2",
     "site": "https://github.com/pojiezhiyuanjun/freev2",
-    "url": "https://raw.githubusercontent.com/pojiezhiyuanjun/freev2/master/0705.txt",
+    "url": "https://raw.githubusercontent.com/pojiezhiyuanjun/freev2/master/0708.txt",
     "update_method": "change_date",
     "enabled": true
   },
@@ -51,7 +51,7 @@
     "id": 6,
     "remarks": "colatiger/v2ray-nodes",
     "site": "https://github.com/colatiger/v2ray-nodes",
-    "url": "https://bitbucket.org/huwo1/proxy_nodes/raw/b90856fe7cb9c666223f3ad41c87d0e60c711590/proxy.md",
+    "url": "https://bitbucket.org/huwo1/proxy_nodes/raw/f31ca9ec67b84071515729ff45b011b6b09c10f1/proxy.md",
     "update_method": "auto",
     "enabled": true
   },
@@ -91,7 +91,7 @@
     "id": 11,
     "remarks": "阿伟科技",
     "site": "https://agit.ai/12/a/",
-    "url": "https://agit.ai/12/a/raw/branch/master/7/7.4v2",
+    "url": "https://agit.ai/12/a/raw/branch/master/7/7.7v2",
     "update_method": "change_date",
     "enabled": true
   },
@@ -131,7 +131,7 @@
     "id": 16,
     "remarks": "ermaozi/get_subscribe",
     "site": "https://github.com/ermaozi/get_subscribe",
-    "url": "https://raw.githubusercontent.com/ermaozi/get_subscribe/main/subscribe/clash.yml",
+    "url": "https://raw.githubusercontent.com/ermaozi/get_subscribe/main/subscribe/v2ray.txt",
     "update_method": "auto",
     "enabled": true
   },
@@ -227,7 +227,7 @@
     "id": 28,
     "remarks": "www.cfmem.com",
     "site": "https://oss.v2rayse.com",
-    "url": "https://oss.v2rayse.com/proxies/data/2023-07-05/7hPqLEz.txt",
+    "url": "https://oss.v2rayse.com/proxies/data/2023-07-07/kImYKoV.txt",
     "update_method": "change_date",
     "enabled": true
   },
@@ -323,7 +323,7 @@
     "id": 40,
     "remarks": "ClashNode",
     "site": "https://clashnode.com/f/freenode",
-    "url": "https://clashnode.com/wp-content/uploads/2023/07/20230705.txt",
+    "url": "https://clashnode.com/wp-content/uploads/2023/07/20230708.txt",
     "update_method": "change_date",
     "enabled": true
   }
