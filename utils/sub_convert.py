@@ -334,7 +334,7 @@ class SubConvert:
                         else:
                             yaml_url.setdefault('ws-headers', {'Host': vmess_config['host']})
                         # 判断节点名称、密码和obfsparam是否包含乱码字符，如果有则不加入url_list
-                        if all(ord(c) < 128 for c in yaml_url['name']) and all(ord(c) < 128 for c in yaml_url['password']) and all(ord(c) < 128 for c in yaml_url['obfsparam'])and all(ord(c) < 128 for c in yaml_url['protoparam']) and '"' not in yaml_url.get('obfsparam', '') and '"' not in yaml_url.get('protoparam', ''):
+                        if all(ord(c) < 128 for c in yaml_url['name']) and all(ord(c) < 128 for c in yaml_url['server']):
                             url_list.append(yaml_url)
                 except Exception as err:
                     print(f'yaml_encode 解析 vmess 节点发生错误: {err}')
@@ -367,7 +367,7 @@ class SubConvert:
                     yaml_url.setdefault('cipher', method_part)
                     yaml_url.setdefault('password', password_part)
                     # 判断节点名称、密码和obfsparam是否包含乱码字符，如果有则不加入url_list
-                    if all(ord(c) < 128 for c in yaml_url['name']) and all(ord(c) < 128 for c in yaml_url['password']) and all(ord(c) < 128 for c in yaml_url['obfsparam'])and all(ord(c) < 128 for c in yaml_url['protoparam']) and '"' not in yaml_url.get('obfsparam', '') and '"' not in yaml_url.get('protoparam', ''):
+                    if all(ord(c) < 128 for c in yaml_url['name']) and all(ord(c) < 128 for c in yaml_url['server']):
                         url_list.append(yaml_url)
                 except Exception as err:
                     print(f'yaml_encode 解析 ss 节点发生错误: {err}')
@@ -454,7 +454,7 @@ class SubConvert:
 
                     yaml_url.setdefault('skip-cert-verify', True)
                     # 判断节点名称、密码和obfsparam是否包含乱码字符，如果有则不加入url_list
-                    if all(ord(c) < 128 for c in yaml_url['name']) and all(ord(c) < 128 for c in yaml_url['password']) and all(ord(c) < 128 for c in yaml_url['obfsparam'])and all(ord(c) < 128 for c in yaml_url['protoparam']) and '"' not in yaml_url.get('obfsparam', '') and '"' not in yaml_url.get('protoparam', ''):
+                    if all(ord(c) < 128 for c in yaml_url['name']) and all(ord(c) < 128 for c in yaml_url['server']) and all(ord(c) < 128 for c in yaml_url['password']):
                         url_list.append(yaml_url)
                 except Exception as err:
                     print(f'yaml_encode 解析 trojan 节点发生错误: {err}')
