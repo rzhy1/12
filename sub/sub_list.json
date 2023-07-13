@@ -75,7 +75,7 @@
     "id": 9,
     "remarks": "Leon406/SubCrawler",
     "site": "https://github.com/Leon406/SubCrawler",
-    "url": "https://raw.githubusercontent.com/Leon406/SubCrawler/main/sub/share/all2",
+    "url": "https://raw.githubusercontent.com/Leon406/SubCrawler/main/sub/share/all3",
     "update_method": "auto",
     "enabled": true
   },
@@ -265,8 +265,8 @@
   },
   {
     "id": 33,
-    "remarks": "Pawdroid/Free-servers",
-    "site": "https://github.com/Pawdroid/Free-servers",
+    "remarks": "v2cross.com",
+    "site": "https://v2cross.com/archives/1884",
     "url": "https://shadowshare.v2cross.com/publicserver/servers/temp/6etNgGmDo0kilQJq",
     "update_method": "page_release",
     "enabled": true
