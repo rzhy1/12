@@ -333,7 +333,7 @@ class SubConvert:
                             yaml_url.setdefault('ws-headers', {'Host': vmess_config['add']})
                         else:
                             yaml_url.setdefault('ws-headers', {'Host': vmess_config['host']})
-                            url_list.append(yaml_url)
+                        url_list.append(yaml_url)
                 except Exception as err:
                     print(f'yaml_encode 解析 vmess 节点发生错误: {err}')
                     pass
