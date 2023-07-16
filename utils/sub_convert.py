@@ -42,8 +42,8 @@ class SubConvert:
                 sub_content = self.format(''.join(a_content))
             else:
                 s = requests.Session()
-                s.mount('http://', HTTPAdapter(max_retries=5))
-                s.mount('https://', HTTPAdapter(max_retries=5))
+                s.mount('http://', requests.adapters.HTTPAdapter(max_retries=5))
+                s.mount('https://', requests.adapters.HTTPAdapter(max_retries=5))
                 try:
                     print('Downloading from:' + raw_input)
                     resp = s.get(raw_input, timeout=5)
