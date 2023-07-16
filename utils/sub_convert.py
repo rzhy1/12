@@ -29,8 +29,8 @@ class SubConvert:
                 a_content = []
                 for url in raw_input:
                     s = requests.Session()
-                    s.mount('http://', HTTPAdapter(max_retries=5))
-                    s.mount('https://', HTTPAdapter(max_retries=5))
+                    s.mount('http://', requests.adapters.HTTPAdapter(max_retries=5))
+                    s.mount('https://', requests.adapters.HTTPAdapter(max_retries=5))
                     try:
                         print('Downloading from:' + url)
                         resp = s.get(url, timeout=10)
