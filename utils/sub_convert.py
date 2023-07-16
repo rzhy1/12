@@ -666,14 +666,15 @@ class SubConvert:
         if missing_padding != 0:
             url_content += '=' * (4 - missing_padding)  # 不是4的倍数后加= https://www.cnblogs.com/wswang/p/7717997.html
         try:
-            base64_content = base64.b64decode(url_content.encode('utf-8')).decode('utf-8',
-                                                                                  'ignore')  # https://www.codenong.com/42339876/
-            base64_content_format = base64_content
+            base64_bytes = url_content.encode('utf-8')
+            decoded_bytes = base64.b64decode(base64_bytes)
+            base64_content_format = decoded_bytes.decode('utf-8', 'ignore')
             return base64_content_format
         except UnicodeDecodeError:
-            base64_content = base64.b64decode(url_content)
-            base64_content_format = base64_content
-            return str(base64_content)
+            base64_bytes = url_content.encode('utf-8')
+            decoded_bytes = base64.b64decode(base64_bytes)
+            base64_content_format = str(decoded_bytes)
+            return base64_content_format
 
     # {url='订阅链接', output_type={'clash': 输出 Clash 配置, 'base64': 输出 Base64 配置, 'url': 输出 url 配置}, host='远程订阅转化服务地址'}
     def convert_remote(self, url='', output_type='clash', host='http://127.0.0.1:25500'):
