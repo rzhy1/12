@@ -340,7 +340,9 @@ class SubConvert:
 
             if 'vless://' in line:
                 try:
-                    vless_json_config = json.loads(self.base64_decode(line.replace('vless://', '')))
+                    vless_url = line.replace('vless://', '')
+                    vless_decoded = self.base64_decode(vless_url)
+                    vless_json_config = json.loads(vless_decoded)
                     vless_default_config = {
                         'v': 'VLESS Node',
                         'ps': 'VLESS Node',
