@@ -29,8 +29,8 @@ class SubConvert:
                 a_content = []
                 for url in raw_input:
                     s = requests.Session()
-                    s.mount('http://', requests.adapters.HTTPAdapter(max_retries=5))
-                    s.mount('https://', requests.adapters.HTTPAdapter(max_retries=5))
+                    s.mount('http://', HTTPAdapter(max_retries=5))
+                    s.mount('https://', HTTPAdapter(max_retries=5))
                     try:
                         print('Downloading from:' + url)
                         resp = s.get(url, timeout=10)
@@ -42,8 +42,8 @@ class SubConvert:
                 sub_content = self.format(''.join(a_content))
             else:
                 s = requests.Session()
-                s.mount('http://', requests.adapters.HTTPAdapter(max_retries=5))
-                s.mount('https://', requests.adapters.HTTPAdapter(max_retries=5))
+                s.mount('http://', HTTPAdapter(max_retries=5))
+                s.mount('https://', HTTPAdapter(max_retries=5))
                 try:
                     print('Downloading from:' + raw_input)
                     resp = s.get(raw_input, timeout=5)
@@ -338,57 +338,6 @@ class SubConvert:
                     print(f'yaml_encode 解析 vmess 节点发生错误: {err}')
                     pass
 
-            if 'vless://' in line:
-                try:
-                    vless_url = line.replace('vless://', '')
-                    vless_decoded = self.base64_decode(vless_url)
-                    vless_json_config = json.loads(vless_decoded)
-                    vless_default_config = {
-                        'v': 'VLESS Node',
-                        'ps': 'VLESS Node',
-                        'add': '0.0.0.0',
-                        'port': 0,
-                        'id': '',
-                        'scy': 'auto',
-                        'net': '',
-                        'type': '',
-                        'host': '',
-                        'path': '/',
-                        'tls': '',
-                        'sni': '',
-                    }
-                    vless_default_config.update(vless_json_config)
-                    vless_config = vless_default_config
-
-                    yaml_url = {}
-                    yaml_url['name'] = urllib.parse.unquote(str(vless_config['ps'])).replace(':', '-').replace('@', '')
-                    yaml_url.setdefault('server', vless_config['add'])
-                    yaml_url.setdefault('port', int(vless_config['port']))
-                    yaml_url.setdefault('type', 'vless')
-                    yaml_url.setdefault('uuid', vless_config['id'])
-                    yaml_url.setdefault('cipher', vless_config['scy'])
-                    yaml_url.setdefault('skip-cert-vertify', True)
-                    if vless_config['net'] == '' or vless_config['net'] is False or vless_config['net'] is None:
-                        yaml_url.setdefault('network', 'tcp')
-                    else:
-                        yaml_url.setdefault('network', vless_config['net'])
-                    if vless_config['path'] == '' or vless_config['path'] is False or vless_config['path'] is None:
-                        yaml_url.setdefault('ws-path', '/')
-                    else:
-                        yaml_url.setdefault('ws-path', vless_config['path'])
-                    if vless_config['sni'] != '' and vless_config['sni'] is not None:
-                        yaml_url.setdefault('sni', vless_config['sni'])
-                    if vless_config['net'] == 'h2' or vless_config['net'] == 'grpc':
-                        yaml_url.setdefault('tls', True)
-                    elif vless_config['tls'] == '' or vless_config['tls'] is False or vless_config['tls'] is None:
-                        yaml_url.setdefault('tls', False)
-                    else:
-                        yaml_url.setdefault('tls', True)
-                    url_list.append(yaml_url)
-                except Exception as err:
-                    print(f'yaml_encode 解析 vless 节点发生错误: {err}')
-                    pass                   
-
             if 'ss://' in line and 'vless://' not in line and 'vmess://' not in line:
                 if '#' not in line:
                     line = line + '#SS%20Node'
@@ -552,37 +501,6 @@ class SubConvert:
                     vmess_proxy = str('vmess://' + self.base64_encode(vmess_raw_proxy) + '\n')
                     protocol_url.append(vmess_proxy)
 
-                elif proxy['type'] == 'vless':
-                    yaml_default_config = {
-                        'name': 'Vless Node',
-                        'server': '0.0.0.0',
-                        'port': 0,
-                        'uuid': '',
-                        'cipher': 'none',
-                        'network': 'tcp',
-                        'tls': '',
-                        'sni': ''
-                    }
-
-                    yaml_default_config.update(proxy)
-                    proxy_config = yaml_default_config
-
-                    vless_value = {
-                        'v': '2',
-                        'ps': proxy_config['name'],
-                        'add': proxy_config['server'],
-                        'port': proxy_config['port'],
-                        'id': proxy_config['uuid'],
-                        'scy': proxy_config['cipher'],
-                        'net': proxy_config['network'],
-                        'tls': proxy_config['tls'],
-                        'sni': proxy_config['sni']
-                    }
-
-                    vless_raw_proxy = json.dumps(vless_value, sort_keys=False, indent=2, ensure_ascii=False)
-                    vless_proxy = 'vless://' + self.base64_encode(vless_raw_proxy) + '\n'
-                    protocol_url.append(vless_proxy)
-                    
                 elif proxy[
                     'type'] == 'ss':  # SS 节点提取, 由 ss_base64_decoded 部分(参数: 'cipher', 'password', 'server', 'port') Base64 编码后 加 # 加注释(URL_encode)
                     ss_base64_decoded = str(proxy['cipher']) + ':' + str(proxy['password']) + '@' + str(
@@ -590,23 +508,6 @@ class SubConvert:
                     ss_base64 = self.base64_encode(ss_base64_decoded)
                     ss_proxy = str('ss://' + ss_base64 + '#' + str(urllib.parse.quote(proxy['name'])) + '\n')
                     protocol_url.append(ss_proxy)
-
-
-                elif proxy[
-                    'type'] == 'trojan':  # Trojan 节点提取, 由 trojan_proxy 中参数再加上 # 加注释(URL_encode) # trojan Go https://p4gefau1t.github.io/trojan-go/developer/url/
-                    if 'tls' in proxy.keys() and 'network' in proxy.keys():
-                        if proxy['tls'] == True and proxy['network'] != 'tcp':
-                            network_type = proxy['network']
-                            trojan_go = f'?security=tls&type={network_type}&headerType=none'
-                        elif proxy['tls'] == False and proxy['network'] != 'tcp':
-                            trojan_go = f'??allowInsecure=0&type={network_type}&headerType=none'
-                    else:
-                        trojan_go = '?allowInsecure=1'
-                    if 'sni' in proxy.keys():
-                        trojan_go = trojan_go + '&sni=' + proxy['sni']
-                    trojan_proxy = str('trojan://' + str(proxy['password']) + '@' + str(proxy['server']) + ':' + str(
-                        proxy['port']) + trojan_go + '#' + str(urllib.parse.quote(proxy['name'])) + '\n')
-                    protocol_url.append(trojan_proxy)
 
                 elif proxy[
                     'type'] == 'trojan':  # Trojan 节点提取, 由 trojan_proxy 中参数再加上 # 加注释(URL_encode) # trojan Go https://p4gefau1t.github.io/trojan-go/developer/url/
@@ -668,15 +569,14 @@ class SubConvert:
         if missing_padding != 0:
             url_content += '=' * (4 - missing_padding)  # 不是4的倍数后加= https://www.cnblogs.com/wswang/p/7717997.html
         try:
-            base64_bytes = url_content.encode('utf-8')
-            decoded_bytes = base64.b64decode(base64_bytes)
-            base64_content_format = decoded_bytes.decode('utf-8', 'ignore')
+            base64_content = base64.b64decode(url_content.encode('utf-8')).decode('utf-8',
+                                                                                  'ignore')  # https://www.codenong.com/42339876/
+            base64_content_format = base64_content
             return base64_content_format
         except UnicodeDecodeError:
-            base64_bytes = url_content.encode('utf-8')
-            decoded_bytes = base64.b64decode(base64_bytes)
-            base64_content_format = str(decoded_bytes)
-            return base64_content_format
+            base64_content = base64.b64decode(url_content)
+            base64_content_format = base64_content
+            return str(base64_content)
 
     # {url='订阅链接', output_type={'clash': 输出 Clash 配置, 'base64': 输出 Base64 配置, 'url': 输出 url 配置}, host='远程订阅转化服务地址'}
     def convert_remote(self, url='', output_type='clash', host='http://127.0.0.1:25500'):
